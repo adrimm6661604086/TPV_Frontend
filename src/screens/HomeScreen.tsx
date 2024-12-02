@@ -5,7 +5,6 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 const HomeScreen = () => {
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <Icon name="person" size={32} color="#4CAF50" />
         <Text style={styles.userName}>TPV Virtual</Text>
@@ -14,14 +13,12 @@ const HomeScreen = () => {
         </View>
       </View>
 
-      {/* Balance Section */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Last week Balance</Text>
         <Text style={styles.balanceAmount}>1.234.567,89 $</Text>
         <Text style={styles.balanceChange}>(+2.273 $)</Text>
       </View>
 
-      {/* Movements Section */}
       <View style={styles.card}>
         <View style={styles.movementsHeader}>
           <Text style={styles.cardTitle}>Last movements</Text>
@@ -47,7 +44,6 @@ const HomeScreen = () => {
         </ScrollView>
       </View>
 
-      {/* Make Payment Button */}
       <TouchableOpacity style={styles.paymentButton}>
         <Text style={styles.paymentButtonText}>Make Payment</Text>
       </TouchableOpacity>
@@ -55,7 +51,6 @@ const HomeScreen = () => {
   );
 };
 
-// Estilos
 const styles = StyleSheet.create({
   container: {
     flex: 1,
