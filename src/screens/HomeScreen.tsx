@@ -1,15 +1,35 @@
+// React
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
 
-const HomeScreen = () => {
+// Libraries
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../types/navigationTypes'; 
+
+// Utils
+import theme from '../utils/theme';
+
+type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Main'>;
+
+const HomeScreen: React.FC  = () => {  
+  const navigator = useNavigation<HomeScreenNavigationProp>();
+
+  const startPayment = () => {
+    console.log('Payment started');
+    navigator.navigate('Payment');
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Icon name="person" size={32} color="#4CAF50" />
+        <TouchableOpacity onPress={() => navigator.navigate('Profile')}>
+          <Icon name="person" size={32} color={theme.palette.primary.main} />
+        </TouchableOpacity>
         <Text style={styles.userName}>TPV Virtual</Text>
         <View style={styles.headerIcons}>
-          <Icon name="mail-outline" size={24} color="#4CAF50" />
+          <Icon name="mail-outline" size={32} color={theme.palette.primary.main}/>
         </View>
       </View>
 
@@ -44,7 +64,7 @@ const HomeScreen = () => {
         </ScrollView>
       </View>
 
-      <TouchableOpacity style={styles.paymentButton}>
+      <TouchableOpacity style={styles.paymentButton} onPress={startPayment}>
         <Text style={styles.paymentButtonText}>Make Payment</Text>
       </TouchableOpacity>
     </View>
@@ -54,7 +74,7 @@ const HomeScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: theme.palette.background.light,
     paddingTop: 50,
   },
   header: {
@@ -83,16 +103,16 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   cardTitle: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: '600',
     marginBottom: 10,
   },
   balanceAmount: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
   },
   balanceChange: {
-    fontSize: 16,
+    fontSize: 18,
     color: 'green',
   },
   movementsHeader: {
@@ -100,7 +120,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   showMore: {
-    color: '#4CAF50',
+    fontSize: 16,
+    color: theme.palette.primary.dark,
   },
   movementItem: {
     flexDirection: 'row',
@@ -108,14 +129,14 @@ const styles = StyleSheet.create({
     marginVertical: 5,
   },
   movementAmount: {
-    fontSize: 14,
+    fontSize: 16,
   },
   movementDate: {
-    fontSize: 12,
-    color: '#888888',
+    fontSize: 16,
+    color: theme.palette.text.secondary,
   },
   paymentButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: theme.palette.primary.main,
     marginHorizontal: 15,
     padding: 15,
     borderRadius: 10,
@@ -124,17 +145,8 @@ const styles = StyleSheet.create({
   },
   paymentButtonText: {
     color: '#FFFFFF',
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
-  },
-  bottomNav: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    padding: 10,
-    backgroundColor: '#333333',
-    position: 'absolute',
-    bottom: 0,
-    width: '100%',
   },
 });
 
