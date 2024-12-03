@@ -8,8 +8,8 @@ import {
 } from 'react-native';
 
 // Components
-import Login from '../components/userAuth/Login';
-import Register from '../components/userAuth/Register';
+import Login from '../../components/userAuth/Login';
+import Register from '../../components/userAuth/Register';
 
 export const enum AuthComponent {
   Register = 'Register',
@@ -25,34 +25,24 @@ const UserAuthScreen: React.FC<UserAuthProps> = ({ setIsAuthenticated }) => {
 
   return (
     <ScrollView
-      contentContainerStyle={{ flexGrow: 1 }}
+      contentContainerStyle={styles.container}
       showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps={'always'}
-      style={{ backgroundColor: 'white' }}>
+    >
       <View style={styles.bg} />
-        <View style={styles.logoContainer}>
-          <Text style={styles.logoText}>Logo</Text>
-        </View>
       <View style={styles.formContainer}>
         {currentComponent === AuthComponent.Login ? 
             <Login 
+              currentComponent={currentComponent}
               setCurrentComponent={setCurrentComponent} 
               setIsAuthenticated={setIsAuthenticated}
             /> 
             : 
-            <Register setCurrentComponent={setCurrentComponent}/>
+            <Register 
+              currentComponent={currentComponent}
+              setCurrentComponent={setCurrentComponent}
+            />
         }
-        <TouchableOpacity 
-          style={styles.button} 
-          onPress={() => {
-            if (currentComponent == AuthComponent.Register) {
-              setCurrentComponent(AuthComponent.Login);
-            } else {
-              setCurrentComponent(AuthComponent.Register);
-            }
-          }}>
-          <Text style={styles.buttonText}>{currentComponent}</Text>
-        </TouchableOpacity>
       </View>
     </ScrollView>
   );
@@ -60,8 +50,10 @@ const UserAuthScreen: React.FC<UserAuthProps> = ({ setIsAuthenticated }) => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     backgroundColor: '#F0F0F0',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   innerContainer: {
     flex: 1,
@@ -77,36 +69,20 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 50,
     borderBottomRightRadius: 50,
   },
-  logoContainer: {
-    backgroundColor: 'white',
-    position: 'absolute',
-    top: 80,
-    height: 100,
-    width: 150,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    elevation: 5,
-  },
-  logoText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
-  },
   formContainer: {
-    backgroundColor: 'white',
-    padding: 20,
-    borderRadius: 20,
     width: '90%',
+    backgroundColor: 'white',
+    padding: 10,
+    borderRadius: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 6,
     elevation: 6,
+    alignSelf: 'center',    
+    minHeight: 320,       
+    maxHeight: 600,          
+    justifyContent: 'center',
   },
   button: {
     backgroundColor: '#4CAF50',
