@@ -6,24 +6,30 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from 'react-native';
+
 // Libraries
-import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import FeatherIcon from 'react-native-vector-icons/Feather';
 
 // Utils
 import { BACKEND_URL } from '@env';
-import { AuthComponent } from '../../screens/UserAuthScreen';
-
+import { AuthComponent } from '../../screens/User/UserAuthScreen';
+import styles from './styles';
 
 interface LoginProps {
+  currentComponent: AuthComponent;
   setCurrentComponent: (component: AuthComponent) => void;
   setIsAuthenticated : (isAuthenticated: boolean) => void;
 }
 
-const Login: React.FC<LoginProps> = ({ setCurrentComponent, setIsAuthenticated }) => {
+const Login: React.FC<LoginProps> = ({ currentComponent, setCurrentComponent, setIsAuthenticated }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -54,61 +60,54 @@ const Login: React.FC<LoginProps> = ({ setCurrentComponent, setIsAuthenticated }
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Login</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Login</Text>
-      </TouchableOpacity>
-    </View>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+          <Text style={styles.title}>Login</Text>
+          <View style={styles.innerContainer}>
+            <View style={styles.twoSectionContainer}>
+              <FeatherIcon name="mail" size={24} style={styles.icon} />
+              <TextInput
+                style={styles.input}
+                placeholder="Email"
+                value={email}
+                onChangeText={setEmail}
+              />
+            </View>
+            <View style={styles.twoSectionContainer}>
+              <FeatherIcon name="lock" size={24} style={styles.icon} />
+              <TextInput
+                style={styles.input}
+                placeholder="Password"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+              />
+            </View>
+          </View>
+          <View style={styles.twoButtonsContainer}>
+            <TouchableOpacity
+              style={{ ...styles.button, backgroundColor: 'gray' }}
+              onPress={() => setCurrentComponent(AuthComponent.Register)}
+            >
+              <Text style={styles.buttonText}>
+                {currentComponent === AuthComponent.Register ? 'Login' : 'Register'}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{ ...styles.button, backgroundColor: '#2196F3' }}
+              onPress={handleLogin}
+            >
+              <Text style={styles.buttonText}>Login</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingHorizontal: 20,
-    backgroundColor: '#fff',
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  input: {
-    height: 50,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 10,
-    marginBottom: 15,
-    paddingHorizontal: 10,
-  },
-  button: {
-    backgroundColor: '#2196F3',
-    paddingVertical: 15,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-});
 
 export default Login;

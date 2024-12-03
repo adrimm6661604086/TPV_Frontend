@@ -5,32 +5,47 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
   Alert,
   View,
+  NativeSyntheticEvent,
+  TextInputChangeEventData,
 } from 'react-native';
 
 // Libraries
 import axios from 'axios';
-import { useNavigation } from '@react-navigation/native';
+import FeatherIcon from 'react-native-vector-icons/Feather';
+import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
+import Ionicon from 'react-native-vector-icons/Ionicons';
 
 // Utils
 import { BACKEND_URL } from '@env';
-import { AuthComponent } from '../../screens/UserAuthScreen';
+import { AuthComponent } from '../../screens/User/UserAuthScreen';
+import styles from './styles';
 
 
 interface RegisterProps {
+  currentComponent: AuthComponent;
   setCurrentComponent: (component: AuthComponent) => void;
 }
 
-const Register: React.FC<RegisterProps> = ({ setCurrentComponent }) => {
-  const navigator = useNavigation();
+enum PasswordStrength {
+  Weak = 'Weak',
+  Medium = 'Medium',
+  Strong = 'Strong',
+  undefined = 'undefined',
+}
+
+const Register: React.FC<RegisterProps> = ({ currentComponent, setCurrentComponent }) => {
+  const iconsize = 24;
   const [name, setName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
+  const [emailVerify, setEmailVerify] = useState(false);
   const [password, setPassword] = useState('');
+  const [passwordStrength, setPasswordStrength] = useState<PasswordStrength>(PasswordStrength.undefined);
   const [DNI, setDNI] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [phoneVerify, setPhoneVerify] = useState(false);
   const [address, setAddress] = useState('');
   const [postalCode, setPostalCode] = useState('');
   const [city, setCity] = useState('');
@@ -52,47 +67,62 @@ const Register: React.FC<RegisterProps> = ({ setCurrentComponent }) => {
       city: city,
     };
     axios
-        .post(`${BACKEND_URL}/api/register-user`, userData)
+        .post(`http://10.2.2.2:5000/api/register-user`, userData)
         .then(response => {
-          if (response.data.status) {
-            
+          if (response.data.status == 201) {
+            Alert.alert('Success', 'User registered successfully');
+            setCurrentComponent(AuthComponent.Login);
           } else {
             Alert.alert(JSON.stringify(response.data));
           }
         })
         .catch(e => console.log(e));
-
   };
 
-  // function handleEmail(e) {
-  //   const emailVar = e.nativeEvent.text;
-  //   setEmail(emailVar);
-  //   if (/^[\w.%+-]+@[\w.-]+\.[a-zA-Z]{2,}$/.test(emailVar)) {
-  //     setEmail(emailVar);
-  //     return true;
-  //   }
-  //   return false;
-  // }
 
-  // function handlePhone(e) {
-  //   const phoneVar = e.nativeEvent.text;
-  //   setPhoneNumber(phoneVar);
-  //   if (/[6-9]{1}[0-9]{9}/.test(phoneVar)) {
-  //     setPhoneNumber(phoneVar);
-  //     return true;
-  //   }
-  //   return false;
-  // }
+  const onEmailChange = (text : string) => {
+    setEmail(text);
+    
+    const handleEmail = (email: string) => {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return emailRegex.test(email); 
+    };
 
-  // function handlePassword(e) {
-  //   const passwordVar = e.nativeEvent.text;
-  //   setPassword(passwordVar);
-  //   if (/(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}/.test(passwordVar)) {
-  //     setPassword(passwordVar);
-  //     return true;
-  //   }
-  //   return false;
-  // }
+    setEmailVerify(handleEmail(text));
+  };
+  
+  const onPhoneChange = (text : string) => {
+    setPhoneNumber(text);
+
+    const handlePhone = (phone: string) => {
+      const phoneRegex = /^[0-9]{9,12}$/;  
+      return phoneRegex.test(phone); 
+    };
+
+    setPhoneVerify(handlePhone(text))
+  };
+  
+  const onPasswordChange = (text : string) => {
+    setPassword(text);
+
+    const handlePassword = (password: string) => {
+      let strengthLevel = PasswordStrength.Weak;
+    
+      if (password.length >= 8) {
+        if (/[A-Z]/.test(password) && /[a-z]/.test(password)) {
+          if (/\d/.test(password) && /[\W_]/.test(password)) {
+            strengthLevel = PasswordStrength.Strong; 
+          } else {
+            strengthLevel = PasswordStrength.Medium; 
+          }
+        }
+      }
+      return strengthLevel;
+    };
+
+    const strength = handlePassword(text);
+    setPasswordStrength(strength);
+  };
 
   return (
     <ScrollView
@@ -101,7 +131,8 @@ const Register: React.FC<RegisterProps> = ({ setCurrentComponent }) => {
     >
       <View style={styles.innerContainer}>
         <Text style={styles.title}>Register</Text>
-        <View style={styles.twofields}>
+        <View style={styles.threeSectionContainer}>
+          <FeatherIcon name="user" size={iconsize} color="black" style={styles.icon}/>          
           <TextInput
             style={styles.input}
             placeholder="Name"
@@ -115,104 +146,104 @@ const Register: React.FC<RegisterProps> = ({ setCurrentComponent }) => {
             onChangeText={setLastName}
           />
         </View>
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          autoCorrect={false}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="DNI"
-          value={DNI}
-          onChangeText={setDNI}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Phone Number"
-          value={phoneNumber}
-          onChangeText={setPhoneNumber}
-          keyboardType="phone-pad"
-        />
+        <View style={styles.twoSectionContainer}>
+          {email.length < 1 ? 
+          <FeatherIcon name="mail" size={iconsize} color="black" style={styles.icon}/> 
+          : emailVerify ? (
+            <FeatherIcon name="check-circle" color="green" size={iconsize} style={styles.icon}/>
+          ) : (
+            <FeatherIcon name="x-circle" color="red" size={iconsize} style={styles.icon}/>
+          )}
+          <TextInput
+            style={styles.input}
+            placeholder="Email"
+            value={email}
+            onChangeText={onEmailChange}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+        </View>
+        <View style={styles.twoSectionContainer}>
+          {password.length < 1 ? 
+            <FeatherIcon name="lock" size={iconsize} color="black" style={styles.icon}/> 
+          : passwordStrength == PasswordStrength.Medium ? (
+            <Ionicon name="warning-outline" color="#f1c40f" size={iconsize} style={styles.icon}/>
+          ) : passwordStrength == PasswordStrength.Strong ? (
+            <FeatherIcon name="check-circle" color="green" size={iconsize} style={styles.icon}/>
+          ) : (
+            <FeatherIcon name="x-circle" color="red" size={iconsize} style={styles.icon}/>
+          )}
+          <TextInput
+            style={styles.input}
+            placeholder="Password"
+            value={password}
+            onChangeText={onPasswordChange}
+            secureTextEntry
+          />
+        </View>
+        <View style={styles.twoSectionContainer}>
+          { phoneNumber.length < 1 ?
+              <FontAwesomeIcon name="phone" size={iconsize} color="black" style={styles.icon}/>
+            : phoneVerify ? (
+              <FeatherIcon name="check-circle" color="green" size={iconsize} style={styles.icon}/>
+            ) : (
+              <FeatherIcon name="x-circle" color="red" size={iconsize} style={styles.icon}/>
+            )
+          }
+          <TextInput
+            style={styles.input}
+            placeholder="Phone Number"
+            value={phoneNumber}
+            onChangeText={onPhoneChange}
+            keyboardType="numeric"
+          />
+        </View>
+        <View style={styles.threeSectionContainer}>
+          <FontAwesomeIcon name="id-card-o" size={iconsize} color="black" style={styles.icon}/>
+          <TextInput
+            style={styles.input}
+            placeholder="DNI"
+            value={DNI}
+            onChangeText={setDNI}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Postal Code"
+            value={postalCode}
+            onChangeText={setPostalCode}
+            keyboardType="numeric"
+          />
+        </View>
         <TextInput
           style={styles.input}
           placeholder="Address"
           value={address}
           onChangeText={setAddress}
         />
-        <TextInput
-          style={styles.input}
-          placeholder="Postal Code"
-          value={postalCode}
-          onChangeText={setPostalCode}
-          keyboardType="numeric"
-        />
+        
         <TextInput
           style={styles.input}
           placeholder="City"
           value={city}
           onChangeText={setCity}
         />
-
-        <TouchableOpacity style={styles.button} onPress={handleRegister}>
-          <Text style={styles.buttonText}>Register</Text>
-        </TouchableOpacity>
+        <View style={styles.twoButtonsContainer}>
+          <TouchableOpacity 
+            style={{...styles.button, backgroundColor: 'gray'}} 
+            onPress={() => setCurrentComponent(AuthComponent.Login)}>
+            <Text style={styles.buttonText}>
+              { AuthComponent.Login }
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={{...styles.button, backgroundColor: 'green'}} onPress={handleRegister}>
+            <Text style={styles.buttonText}>Register</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </ScrollView>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    paddingHorizontal: 20,
-  },
-  innerContainer: {
-    flex: 1,
-    paddingVertical: 50,
-  },
-  twofields: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  input: {
-    flex: 1,
-    height: 50,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 10,
-    marginBottom: 10,
-    marginHorizontal: 5,
-    paddingHorizontal: 10,
-    fontSize: 16,
-  },
-  button: {
-    backgroundColor: '#4CAF50',
-    paddingVertical: 15,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-});
 
 export default Register;
