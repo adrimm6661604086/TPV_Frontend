@@ -1,10 +1,10 @@
 import React from 'react';
 import { View, Text} from 'react-native';
 
-const SalesScreen = () => (
+const StatsScreen: React.FC  = () => (
   <View>
     <Text>Stats</Text>
   </View>
 );
 
-export default SalesScreen;
+export default StatsScreen;
