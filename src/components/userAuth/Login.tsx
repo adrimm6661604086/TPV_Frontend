@@ -44,10 +44,10 @@ const Login: React.FC<LoginProps> = ({ currentComponent, setCurrentComponent, se
       password : password,
     };
 
-    axios.post(`${BACKEND_URL}/api/login-user`, userData)
+    axios.post(`${BACKEND_URL}/api/user/login-user`, userData)
       .then((response) => {
-        if (response.data.success) {
-          AsyncStorage.setItem('token', response.data.token);
+        if (response.data.status === 200) {
+          AsyncStorage.setItem('userToken', response.data.token);
           AsyncStorage.setItem('isLoggedIn', JSON.stringify(true));
           setIsAuthenticated(true);
         } else {

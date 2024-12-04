@@ -21,7 +21,7 @@ interface UserAuthProps {
 }
 
 const UserAuthScreen: React.FC<UserAuthProps> = ({ setIsAuthenticated }) => {
-  const [currentComponent, setCurrentComponent] = useState<AuthComponent>(AuthComponent.Register);
+  const [currentComponent, setCurrentComponent] = useState<AuthComponent>(AuthComponent.Login);
 
   return (
     <ScrollView

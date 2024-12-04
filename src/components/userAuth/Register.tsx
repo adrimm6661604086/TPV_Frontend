@@ -66,15 +66,15 @@ const Register: React.FC<RegisterProps> = ({ currentComponent, setCurrentCompone
       postalCode: postalCode,
       city: city,
     };
+
     axios
-        .post(`http://10.2.2.2:5000/api/register-user`, userData)
+        .post(`${BACKEND_URL}/api/user/register-user`, userData)
         .then(response => {
-          if (response.data.status == 201) {
+          console.log(response.data, response.data.status);
+          if (response.data.status === 201) {
             Alert.alert('Success', 'User registered successfully');
             setCurrentComponent(AuthComponent.Login);
-          } else {
-            Alert.alert(JSON.stringify(response.data));
-          }
+          } 
         })
         .catch(e => console.log(e));
   };
