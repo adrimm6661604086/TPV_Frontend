@@ -22,11 +22,11 @@ const theme = {
         success: {
             main: '#2C6E49',
         },
-        info: {
-            main: '#93C7B5',
+        default: {
+            main: '#808b96',
         },
         error: {
-            main: '#B00020',
+            main: '#ff0000',
         },
     },
 };
