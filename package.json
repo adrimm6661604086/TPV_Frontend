@@ -21,6 +21,7 @@
     "react-native-currency-input": "^1.1.1",
     "react-native-dotenv": "^3.4.11",
     "react-native-gesture-handler": "^2.21.2",
+    "react-native-nfc-manager": "^3.16.1",
     "react-native-reanimated": "^3.16.3",
     "react-native-safe-area-context": "^4.14.0",
     "react-native-screens": "^4.3.0",
