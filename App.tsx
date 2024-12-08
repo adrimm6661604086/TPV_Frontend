@@ -24,7 +24,7 @@ import theme from './src/utils/theme';
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 
 const App: React.FC = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
