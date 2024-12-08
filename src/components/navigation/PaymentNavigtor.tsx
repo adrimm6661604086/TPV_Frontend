@@ -9,22 +9,36 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import PaymentScreen from '../../screens/Payment/PaymentScreen';
 import CardReaderScreen from '../../screens/Payment/CardReaderScreen';
 import PINScreen from '../../screens/Payment/PINScreen';
+import NumberPadScreen from '../../screens/Payment/NumberPadScreen';
 
-const PaymentStack = createNativeStackNavigator();
+type PaymentStackParamList = {
+    "Payment": undefined;
+    "Payment-Reader": { amount: number };
+    "Payment-Pin": undefined;
+    "Payment-Confirmed": undefined;
+    "Payment-Refused": undefined;
+};
+
+const PaymentStack = createNativeStackNavigator<PaymentStackParamList>();
 
 const PaymentNavigator: React.FC = () => {  
     return (
         <PaymentStack.Navigator>
             <PaymentStack.Screen 
                 name="Payment" 
-                component={PaymentScreen} 
+                component={NumberPadScreen} 
                 options={{ headerShown: false }}
             />
             <PaymentStack.Screen 
                 name="Payment-Reader" 
-                component={CardReaderScreen} 
                 options={{ headerShown: false }}
-            />
+            >
+                {props => {
+                    const { route } = props;
+                    const amount = route.params?.amount;
+                    return <CardReaderScreen {...props} amount={amount} />;
+                }}
+            </PaymentStack.Screen>
             <PaymentStack.Screen 
                 name="Payment-Pin" 
                 component={PINScreen} 
