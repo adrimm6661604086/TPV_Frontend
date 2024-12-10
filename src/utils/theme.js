@@ -28,6 +28,9 @@ const theme = {
         error: {
             main: '#ff0000',
         },
+        warn: {
+            main: '#f1c40f',
+        },
     },
 };
 
