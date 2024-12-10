@@ -1,4 +1,3 @@
-// React
 import React, { useState } from 'react';
 import {
   ScrollView,
@@ -7,21 +6,23 @@ import {
   TouchableOpacity,
   Alert,
   View,
-  NativeSyntheticEvent,
-  TextInputChangeEventData,
 } from 'react-native';
 
 // Libraries
-import axios from 'axios';
 import FeatherIcon from 'react-native-vector-icons/Feather';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import Ionicon from 'react-native-vector-icons/Ionicons';
 
+// Components
+import Dropdown from '../Dropdown';
+
+// Hooks
+import { useRegister } from '../../hooks/UserHooks';
+
 // Utils
-import { BACKEND_URL } from '@env';
 import { AuthComponent } from '../../screens/User/UserAuthScreen';
 import styles from './styles';
-
+import theme from '../../utils/theme';
 
 interface RegisterProps {
   currentComponent: AuthComponent;
@@ -35,93 +36,96 @@ enum PasswordStrength {
   undefined = 'undefined',
 }
 
+const iconsize = 24;
+
 const Register: React.FC<RegisterProps> = ({ currentComponent, setCurrentComponent }) => {
-  const iconsize = 24;
-  const [name, setName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [emailVerify, setEmailVerify] = useState(false);
-  const [password, setPassword] = useState('');
+  const [step, setStep] = useState(1);
+
+  const [formData, setFormData] = useState({
+    name: '',
+    lastName: '',
+    email: '',
+    password: '',
+    phoneNumber: '',
+    DNI: '',
+    postalCode: '',
+    address: '',
+    city: '',
+    country: '',
+    IBAN: '',
+    bankEntity: 'BankSim',
+  });
+
   const [passwordStrength, setPasswordStrength] = useState<PasswordStrength>(PasswordStrength.undefined);
-  const [DNI, setDNI] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [phoneVerify, setPhoneVerify] = useState(false);
-  const [address, setAddress] = useState('');
-  const [postalCode, setPostalCode] = useState('');
-  const [city, setCity] = useState('');
+  const [emailVerify, setEmailVerify] = useState<boolean | undefined>(undefined);
+  const [phoneVerify, setPhoneVerify] = useState<boolean | undefined>(undefined);
+  const { registerUser } = useRegister(setCurrentComponent);
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData({ ...formData, [field]: value });
+  };
+
+  const handleNext = (step: number) => {
+    if (handleStepperFilled(step)) {
+      if (step < 3) {
+        setStep(step + 1);
+      } else {
+        handleRegister();
+      }
+    } else {	
+      Alert.alert('Error', 'Please fill out all fields');
+    }
+  };
+
+  const handleBack = () => {
+    if (step > 1) {
+      setStep(step - 1);
+    }
+  };
 
   const handleRegister = () => {
-    if (!name || !lastName || !email || !password || !DNI || !phoneNumber || !address || !postalCode || !city) {
-      Alert.alert('Error', 'Please fill out all fields');
-      return;
-    }
-    const userData = {
-      name: name,
-      lastName: lastName,
-      email: email,
-      password: password,
-      DNI: DNI,
-      phoneNumber: phoneNumber,
-      address: address,
-      postalCode: postalCode,
-      city: city,
-    };
-
-    axios
-        .post(`${BACKEND_URL}/api/user/register-user`, userData)
-        .then(response => {
-          console.log(response.data, response.data.status);
-          if (response.data.status === 201) {
-            Alert.alert('Success', 'User registered successfully');
-            setCurrentComponent(AuthComponent.Login);
-          } 
-        })
-        .catch(e => console.log(e));
+    registerUser(formData);
   };
 
-
-  const onEmailChange = (text : string) => {
-    setEmail(text);
-    
-    const handleEmail = (email: string) => {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      return emailRegex.test(email); 
-    };
-
-    setEmailVerify(handleEmail(text));
+  const onEmailChange = (text: string) => {
+    handleInputChange('email', text);
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    setEmailVerify(emailRegex.test(text));
   };
-  
-  const onPhoneChange = (text : string) => {
-    setPhoneNumber(text);
 
-    const handlePhone = (phone: string) => {
-      const phoneRegex = /^[0-9]{9,12}$/;  
-      return phoneRegex.test(phone); 
-    };
-
-    setPhoneVerify(handlePhone(text))
+  const onPhoneChange = (text: string) => {
+    handleInputChange('phoneNumber', text);
+    const phoneRegex = /^[0-9]{9,12}$/;
+    setPhoneVerify(phoneRegex.test(text));
   };
-  
-  const onPasswordChange = (text : string) => {
-    setPassword(text);
 
-    const handlePassword = (password: string) => {
-      let strengthLevel = PasswordStrength.Weak;
-    
-      if (password.length >= 8) {
-        if (/[A-Z]/.test(password) && /[a-z]/.test(password)) {
-          if (/\d/.test(password) && /[\W_]/.test(password)) {
-            strengthLevel = PasswordStrength.Strong; 
-          } else {
-            strengthLevel = PasswordStrength.Medium; 
-          }
+  const onPasswordChange = (text: string) => {
+    handleInputChange('password', text);
+    let strengthLevel = PasswordStrength.Weak;
+
+    if (text.length >= 8) {
+      if (/[A-Z]/.test(text) && /[a-z]/.test(text)) {
+        if (/\d/.test(text) && /[\W_]/.test(text)) {
+          strengthLevel = PasswordStrength.Strong;
+        } else {
+          strengthLevel = PasswordStrength.Medium;
         }
       }
-      return strengthLevel;
-    };
+    }
+    setPasswordStrength(strengthLevel);
+  };
 
-    const strength = handlePassword(text);
-    setPasswordStrength(strength);
+  const handleStepperFilled = (step: number) => {
+    switch (step) {
+      case 1:
+        return formData.name && formData.lastName && formData.email && formData.password && formData.phoneNumber;
+      case 2:
+        return formData.DNI && formData.postalCode && formData.address && formData.city && formData.country;
+      case 3:
+        return formData.IBAN && formData.bankEntity;
+      default:
+        return false
+    }
   };
 
   return (
@@ -131,119 +135,189 @@ const Register: React.FC<RegisterProps> = ({ currentComponent, setCurrentCompone
     >
       <View style={styles.innerContainer}>
         <Text style={styles.title}>Register</Text>
-        <View style={styles.threeSectionContainer}>
-          <FeatherIcon name="user" size={iconsize} color="black" style={styles.icon}/>          
-          <TextInput
-            style={styles.input}
-            placeholder="Name"
-            value={name}
-            onChangeText={setName}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Last Name"
-            value={lastName}
-            onChangeText={setLastName}
-          />
+
+        {/* Stepper */}
+        <View style={styles.stepper}>
+          <View style={[styles.step, step == 1 && styles.activeStep]}>
+            <Text style={{
+              color: step == 1 ? theme.palette.text.light : theme.palette.text.primary, 
+              fontWeight: 600,
+              textAlign:'center'}}> 1 </Text>
+          </View>
+          <View style={[styles.step, step == 2 && styles.activeStep]}>
+            <Text style={{
+              color: step == 2 ? theme.palette.text.light : theme.palette.text.primary, 
+              fontWeight: 600,
+              textAlign:'center'}}> 2 </Text>
+          </View>
+          <View style={[styles.step, step == 3 && styles.activeStep]}>
+            <Text style={{
+              color: step == 3 ? theme.palette.text.light : theme.palette.text.primary, 
+              fontWeight: 600,
+              textAlign:'center'}}> 3 </Text>
+          </View>
         </View>
-        <View style={styles.twoSectionContainer}>
-          {email.length < 1 ? 
-          <FeatherIcon name="mail" size={iconsize} color="black" style={styles.icon}/> 
-          : emailVerify ? (
-            <FeatherIcon name="check-circle" color="green" size={iconsize} style={styles.icon}/>
-          ) : (
-            <FeatherIcon name="x-circle" color="red" size={iconsize} style={styles.icon}/>
-          )}
-          <TextInput
-            style={styles.input}
-            placeholder="Email"
-            value={email}
-            onChangeText={onEmailChange}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-        </View>
-        <View style={styles.twoSectionContainer}>
-          {password.length < 1 ? 
-            <FeatherIcon name="lock" size={iconsize} color="black" style={styles.icon}/> 
-          : passwordStrength == PasswordStrength.Medium ? (
-            <Ionicon name="warning-outline" color="#f1c40f" size={iconsize} style={styles.icon}/>
-          ) : passwordStrength == PasswordStrength.Strong ? (
-            <FeatherIcon name="check-circle" color="green" size={iconsize} style={styles.icon}/>
-          ) : (
-            <FeatherIcon name="x-circle" color="red" size={iconsize} style={styles.icon}/>
-          )}
-          <TextInput
-            style={styles.input}
-            placeholder="Password"
-            value={password}
-            onChangeText={onPasswordChange}
-            secureTextEntry
-          />
-        </View>
-        <View style={styles.twoSectionContainer}>
-          { phoneNumber.length < 1 ?
-              <FontAwesomeIcon name="phone" size={iconsize} color="black" style={styles.icon}/>
-            : phoneVerify ? (
-              <FeatherIcon name="check-circle" color="green" size={iconsize} style={styles.icon}/>
-            ) : (
-              <FeatherIcon name="x-circle" color="red" size={iconsize} style={styles.icon}/>
-            )
-          }
-          <TextInput
-            style={styles.input}
-            placeholder="Phone Number"
-            value={phoneNumber}
-            onChangeText={onPhoneChange}
-            keyboardType="numeric"
-          />
-        </View>
-        <View style={styles.threeSectionContainer}>
-          <FontAwesomeIcon name="id-card-o" size={iconsize} color="black" style={styles.icon}/>
-          <TextInput
-            style={styles.input}
-            placeholder="DNI"
-            value={DNI}
-            onChangeText={setDNI}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Postal Code"
-            value={postalCode}
-            onChangeText={setPostalCode}
-            keyboardType="numeric"
-          />
-        </View>
-        <TextInput
-          style={styles.input}
-          placeholder="Address"
-          value={address}
-          onChangeText={setAddress}
-        />
-        
-        <TextInput
-          style={styles.input}
-          placeholder="City"
-          value={city}
-          onChangeText={setCity}
-        />
+
+        {step === 1 && (
+          <>
+            <View style={styles.threeSectionContainer}>
+              <FeatherIcon name="user" size={iconsize} color={theme.palette.default.main} style={styles.icon} />
+              <TextInput
+                style={styles.input}
+                placeholder="Name"
+                value={formData.name}
+                onChangeText={(text) => handleInputChange('name', text)}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Last Name"
+                value={formData.lastName}
+                onChangeText={(text) => handleInputChange('lastName', text)}
+              />
+            </View>
+            <View style={styles.twoSectionContainer}>
+              {emailVerify === undefined ? (
+                <FeatherIcon name="mail" color={theme.palette.default.main} size={iconsize} style={styles.icon} />
+              ) : emailVerify == true ? (
+                <FeatherIcon name="check-circle" color={theme.palette.success.main} size={iconsize} style={styles.icon} />
+              ) : (
+                <FeatherIcon name="x-circle" color={theme.palette.error.main} size={iconsize} style={styles.icon} />
+              )}
+              <TextInput
+                style={styles.input}
+                placeholder="Email"
+                value={formData.email}
+                onChangeText={onEmailChange}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+            </View>
+            <View style={styles.twoSectionContainer}>
+              {phoneVerify === undefined ? (
+                <FeatherIcon name="phone" color={theme.palette.default.main} size={iconsize} style={styles.icon} />
+              ) : phoneVerify == true ? (
+                <FeatherIcon name="check-circle" color={theme.palette.success.main} size={iconsize} style={styles.icon} />
+              ) : (
+                <FeatherIcon name="x-circle" color={theme.palette.error.main} size={iconsize} style={styles.icon} />
+              )}
+              <TextInput
+                style={styles.input}
+                placeholder="Phone Number"
+                value={formData.phoneNumber}
+                onChangeText={onPhoneChange}
+                keyboardType="numeric"
+              />
+            </View>
+            <View style={styles.twoSectionContainer}>
+              {passwordStrength === PasswordStrength.Strong ? (
+                <FeatherIcon name="check-circle" color="green" size={iconsize} style={styles.icon} />
+              ) : passwordStrength === PasswordStrength.Medium ? (
+                <Ionicon name="warning-outline" color={theme.palette.warn.main} size={iconsize} style={styles.icon} />
+              ) : passwordStrength === PasswordStrength.Weak ? (
+                <FeatherIcon name="x-circle" color={theme.palette.error.main} size={iconsize} style={styles.icon} />
+              ) : (
+                <FeatherIcon name="lock" color={theme.palette.default.main} size={iconsize} style={styles.icon} />
+              )
+              }
+              <TextInput
+                style={styles.input}
+                placeholder="Password"
+                value={formData.password}
+                onChangeText={onPasswordChange}
+                secureTextEntry
+              />
+            </View>
+          </>
+        )}
+
+        {step === 2 && handleStepperFilled(1) &&(
+          <>
+            <View style={styles.threeSectionContainer}>
+              <FontAwesomeIcon name="id-card-o" size={iconsize} color={theme.palette.default.main} style={styles.icon} />
+              <TextInput
+                style={styles.input}
+                placeholder="DNI"
+                value={formData.DNI}
+                onChangeText={(text) => handleInputChange('DNI', text)}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Postal Code"
+                value={formData.postalCode}
+                onChangeText={(text) => handleInputChange('postalCode', text)}
+                keyboardType="numeric"
+              />
+            </View>
+            <TextInput
+              style={styles.input}
+              placeholder="Address"
+              value={formData.address}
+              onChangeText={(text) => handleInputChange('address', text)}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="City"
+              value={formData.city}
+              onChangeText={(text) => handleInputChange('city', text)}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Country"
+              value={formData.country}
+              onChangeText={(text) => handleInputChange('country', text)}
+            />
+          </>
+        )}
+
+        {step === 3 && (
+          <>
+            <TextInput
+              style={styles.input}
+              placeholder="IBAN"
+              value={formData.IBAN}
+              onChangeText={(text) => handleInputChange('IBAN', text)}
+            />
+            <Dropdown
+              data={[
+                { label: 'BankSim', value: 'BankSim' },
+                { label: 'BBVA', value: 'BBVA' },
+                { label: 'Caixabank', value: 'Caixabank' },
+                { label: 'Santander', value: 'Santander' },
+              ]}
+              onSelect={(selectedItem) =>
+                handleInputChange('bankEntity', selectedItem.value.toString())
+              }
+            />
+          </>
+        )}
+
+
+        {/* Navigation Buttons */}
         <View style={styles.twoButtonsContainer}>
-          <TouchableOpacity 
-            style={{...styles.button, backgroundColor: 'gray'}} 
-            onPress={() => setCurrentComponent(AuthComponent.Login)}>
-            <Text style={styles.buttonText}>
-              { AuthComponent.Login }
-            </Text>
+          {step > 1 && (
+            <TouchableOpacity
+              style={{ ...styles.button, backgroundColor: 'gray' }}
+              onPress={handleBack}
+            >
+              <Text style={styles.buttonText}>Back</Text>
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity
+            style={{ ...styles.button, backgroundColor: step === 3 ? theme.palette.primary.main: theme.palette.secondary.main }}
+            onPress={() => handleNext(step)}
+          >
+            <Text style={styles.buttonText}>{step === 3 ? 'Submit' : 'Next'}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={{...styles.button, backgroundColor: 'green'}} onPress={handleRegister}>
-            <Text style={styles.buttonText}>Register</Text>
+          <TouchableOpacity
+            style={{ ...styles.button, backgroundColor: theme.palette.default.main }}
+            onPress={() => setCurrentComponent(AuthComponent.Login)}
+          >
+            <Text style={styles.buttonText}>Go to Login</Text>
           </TouchableOpacity>
         </View>
       </View>
     </ScrollView>
   );
 };
-
 
 export default Register;

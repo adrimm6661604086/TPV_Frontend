@@ -1,6 +1,8 @@
 import {
     StyleSheet,
   } from 'react-native';
+import theme from '../../utils/theme';
+import { NavigationContainer } from '@react-navigation/native';
 
 const styles = StyleSheet.create({
     container: {
@@ -30,7 +32,7 @@ const styles = StyleSheet.create({
     input: {
         flex: 1,
         height: 50,
-        borderColor: '#ccc',
+        borderColor: theme.palette.text.light,
         borderWidth: 1,
         borderRadius: 10,
         marginBottom: 10,
@@ -46,7 +48,6 @@ const styles = StyleSheet.create({
     twoButtonsContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginBottom: 20,
     },
     button: {
         paddingVertical: 15,
@@ -61,6 +62,25 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: 'bold',
     },
+    stepper: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        marginBottom: 20,
+      },
+      step: {
+        width: 20,
+        height: 20,
+        borderRadius: 10,
+        backgroundColor: theme.palette.text.light,
+        marginHorizontal: 5,
+      },
+      activeStep: {
+        backgroundColor: theme.palette.primary.main,
+      },
+      navigationContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+      }
   });
 
 export default styles;
