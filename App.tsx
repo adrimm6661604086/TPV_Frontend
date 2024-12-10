@@ -6,20 +6,22 @@ import { SafeAreaView, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import axios from 'axios';
 
 // Navigators
 import BottomTabNavigator from './src/components/navigation/BottomTabNavigator';
 import PaymentNavigator from './src/components/navigation/PaymentNavigtor';
-
 
 // Screens
 import UserAuthScreen from './src/screens/User/UserAuthScreen';
 import ProfileScreen from './src/screens/User/ProfileScreen';
 import { RootStackParamList } from './src/types/navigationTypes';
 
+// Hooks
+import { useVerifyAuth } from './src/hooks/UserHooks';
+
 // Utils
 import theme from './src/utils/theme';
-
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 
@@ -27,32 +29,11 @@ const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [token, setToken] = useState<string | null>(null);
 
-  useEffect(() => {
-    const checkAuthentication = async () => {
-      const token = await AsyncStorage.getItem('userToken');
-      if (token) {
-        setIsAuthenticated(true);
-      }
-    };
-    checkAuthentication();
-  }, []);
-
-  useEffect(() => {
-    const fetchToken = async () => {
-      const storedToken = await AsyncStorage.getItem('userToken');
-      setToken(storedToken);
-    };
-    fetchToken();
-  }, [isAuthenticated]);
+  useVerifyAuth(setIsAuthenticated);
 
   return (
     <SafeAreaView style={styles.container}>
       <NavigationContainer>
-        {/* {isAuthenticated ? (
-          <BottomTabNavigator />
-        ) : (
-          <UserAuthScreen setIsAuthenticated={setIsAuthenticated} />
-        )} */}
         <RootStack.Navigator>
             {isAuthenticated ? (
               <RootStack.Screen 
@@ -71,9 +52,10 @@ const App: React.FC = () => {
             )}
             <RootStack.Screen 
               name="Profile"
-              component={ProfileScreen}
               options={{ headerShown: false }}
-            />
+            >
+              {props => <ProfileScreen {...props} setIsAuthenticated={setIsAuthenticated} />}
+            </RootStack.Screen>
             <RootStack.Screen
               name="Payment"
               component={PaymentNavigator}
