@@ -14,12 +14,12 @@ import {
 } from 'react-native';
 
 // Libraries
-import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import FeatherIcon from 'react-native-vector-icons/Feather';
 
+// Hooks
+import { useLogin } from '../../hooks/UserHooks';
+
 // Utils
-import { BACKEND_URL } from '@env';
 import { AuthComponent } from '../../screens/User/UserAuthScreen';
 import styles from './styles';
 
@@ -32,31 +32,10 @@ interface LoginProps {
 const Login: React.FC<LoginProps> = ({ currentComponent, setCurrentComponent, setIsAuthenticated }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const { loginUser } = useLogin(setIsAuthenticated);
 
   const handleLogin = () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields.');
-      return;
-    }
-
-    const userData = {
-      email : email,
-      password : password,
-    };
-
-    axios.post(`${BACKEND_URL}/api/user/login-user`, userData)
-      .then((response) => {
-        if (response.data.status === 200) {
-          AsyncStorage.setItem('userToken', response.data.token);
-          AsyncStorage.setItem('isLoggedIn', JSON.stringify(true));
-          setIsAuthenticated(true);
-        } else {
-          Alert.alert('Login Failed', response.data.message || 'Invalid credentials');
-        }
-      }).catch((error) => {
-        console.error('Error during login:', error);
-        Alert.alert('Error', 'An error occurred. Please try again later.');
-    });
+    loginUser(email, password);
   };
 
   return (
