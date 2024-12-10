@@ -12,7 +12,6 @@ import { useNavigation } from '@react-navigation/native';
 import DialpadKeypad from "../../components/payment/DialpadKeypad";
 
 // Utiles
-import { iconSize } from '../../utils';
 import theme from '../../utils/theme';
 import {defaultStyles} from '../styles';
 
@@ -32,7 +31,7 @@ const NumberPadScreen = () => {
         onPress={() => navigator.goBack()}
         style={defaultStyles.arrowBack}
       >
-        <Ionicons name="arrow-back" size={iconSize} color={theme.palette.primary.main} />
+        <Ionicons name="arrow-back" size={32} color={theme.palette.primary.main} />
       </TouchableOpacity>
       <View style={styles.textContainer}>          
         <Text style={styles.pinText}>Select Amount</Text>
