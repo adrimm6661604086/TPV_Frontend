@@ -1,3 +1,4 @@
+// React
 import React, { useState } from 'react';
 import {
   ScrollView,
@@ -11,6 +12,13 @@ import {
 import Login from '../../components/userAuth/Login';
 import Register from '../../components/userAuth/Register';
 
+// Navigation
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../types/navigationTypes';
+import { useNavigation } from '@react-navigation/native';
+
+type UserAuthScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'UserAuth'>;
+
 export const enum AuthComponent {
   Register = 'Register',
   Login = 'Login'
@@ -21,6 +29,7 @@ interface UserAuthProps {
 }
 
 const UserAuthScreen: React.FC<UserAuthProps> = ({ setIsAuthenticated }) => {
+  const navigator = useNavigation<UserAuthScreenNavigationProp>();
   const [currentComponent, setCurrentComponent] = useState<AuthComponent>(AuthComponent.Login);
 
   return (
