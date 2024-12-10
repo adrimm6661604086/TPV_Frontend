@@ -77,7 +77,7 @@ const DialpadKeypad: React.FC<DialpadKeypadProps> = ({
                     <View
                         style={[
                         {
-                            backgroundColor: item === "" ? "transparent" : theme.palette.secondary.main,
+                            backgroundColor: item === "" ? theme.palette.background.light : theme.palette.primary.main,
                             width: dialPadSize,
                             height: dialPadSize,
                         },
@@ -85,9 +85,9 @@ const DialpadKeypad: React.FC<DialpadKeypadProps> = ({
                         ]}
                     >
                         {item === "delete" ? (
-                            <Feather name="delete" size={24} color="#000" />
+                            <Feather name="delete" size={24} color={theme.palette.background.light} />
                         ) : item === "confirm" ? (
-                            <Feather name="check" size={24} color="#000" />
+                            <Feather name="check" size={24} color={theme.palette.background.light} />
                         )
                         :(
                             <Text style={[{ fontSize: dialPadTextSize }, styles.dialPadText]}>{item}</Text>
@@ -108,9 +108,12 @@ const styles = StyleSheet.create({
         alignItems: "center",
         margin: 10,
         borderRadius: 50,
-        borderColor: "transparent",
+        shadowColor: '#000',
+        shadowOpacity: 0.1,
+        shadowOffset: { width: 0, height: 2 },
+        elevation: 3,
     },
-        dialPadText: {
-        color: "#000",
+    dialPadText: {        
+        color: theme.palette.background.light,
     },
     });
