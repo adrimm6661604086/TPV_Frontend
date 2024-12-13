@@ -8,7 +8,6 @@ import NfcManager, { NfcEvents, NfcTech } from 'react-native-nfc-manager';
 import MaterialCommunityIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 // Utils
-import { iconSize, NFCSize } from '../../utils';
 import theme from '../../utils/theme';
 import { defaultStyles } from '../styles';
 
@@ -74,7 +73,7 @@ const CardReaderScreen: React.FC<CardReaderScreenProps> = ({amount}) => {
       >
          <MaterialCommunityIcon 
           name='close' 
-          size={iconSize} 
+          size={32} 
           color={theme.palette.primary.main}
         />
       </TouchableOpacity>
@@ -84,7 +83,7 @@ const CardReaderScreen: React.FC<CardReaderScreenProps> = ({amount}) => {
           <>
             <MaterialCommunityIcon 
             name='credit-card-wireless-outline' 
-            size={NFCSize} 
+            size={192} 
             color={theme.palette.default.main}
             style={{ 
               ...styles.nfcIcon,
@@ -103,7 +102,7 @@ const CardReaderScreen: React.FC<CardReaderScreenProps> = ({amount}) => {
           <>
             <MaterialCommunityIcon
               name='credit-card-remove-outline'
-              size={NFCSize}
+              size={192}
               color={theme.palette.error.main}
               style={{ 
                 ...styles.nfcIcon,
@@ -124,7 +123,7 @@ const CardReaderScreen: React.FC<CardReaderScreenProps> = ({amount}) => {
           <>
             <MaterialCommunityIcon
             name='credit-card-check-outline'
-            size={NFCSize}
+            size={192}
             color={theme.palette.primary.main}
             style={{ 
               ...styles.nfcIcon,
