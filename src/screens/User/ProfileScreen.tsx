@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert} from 'react-native';
 
 // Libraries
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, CommonActions } from '@react-navigation/native';
 import MaterialCommunityIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import FeatherIcon from 'react-native-vector-icons/Feather';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
@@ -17,6 +17,8 @@ import theme from '../../utils/theme';
 // Types
 import { User } from '../../types/interfaces';
 
+// Libraries
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../types/navigationTypes'; 
   
@@ -32,19 +34,31 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ setIsAuthenticated }) => 
   const { user, loading, error } = useUser('7221985b-2a2d-4081-a290-c0dd0a4ad65d');
   const { bankData, loadingBankData, errorBankData } = useUserBankAccount('7221985b-2a2d-4081-a290-c0dd0a4ad65d');
 
-  const handleLogout = () => { 
+  const handleLogout = () => {
     Alert.alert(
-      "Logout", "Are you sure you want to logout?",
+      "Logout", 
+      "Are you sure you want to logout?",
       [
         {
           text: "Cancel",
           onPress: () => console.log("Cancel Pressed"),
           style: "cancel"
         },
-        { text: "OK", onPress: () => {
-          setIsAuthenticated(false);
-          navigator.navigate('UserAuth');
-        }}
+        { 
+          text: "OK", 
+          onPress: () => {
+            setIsAuthenticated(false);  
+            AsyncStorage.removeItem('userToken');  
+            AsyncStorage.setItem('isLoggedIn', JSON.stringify(false)); 
+            
+            navigator.dispatch(
+              CommonActions.reset({
+                index: 0, 
+                routes: [{ name: 'UserAuth' }],
+              })
+            );
+          }
+        }
       ]
     );
   };
