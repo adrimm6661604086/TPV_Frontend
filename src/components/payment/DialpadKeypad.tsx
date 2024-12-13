@@ -52,7 +52,7 @@ const DialpadKeypad: React.FC<DialpadKeypadProps> = ({
                         onPress: () => console.log("Cancel Pressed"),
                         style: "cancel"
                     },
-                    { text: "OK", onPress: () => navigation.navigate("Payment-Reader", { amount }) }
+                    { text: "OK", onPress: () => navigation.navigate("PaymentReader", { amount }) }
                     ]
                 );
             }
@@ -60,8 +60,6 @@ const DialpadKeypad: React.FC<DialpadKeypadProps> = ({
             const currentStr = amount.toString().replace('.', '');
             const newAmountStr = currentStr + item;
             setAmount(parseFloat(newAmountStr) / 100); 
-            console.log(amount);
-
           }
       };
       

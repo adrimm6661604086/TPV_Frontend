@@ -17,7 +17,6 @@ const HomeScreen: React.FC  = () => {
   const navigator = useNavigation<HomeScreenNavigationProp>();
 
   const startPayment = () => {
-    console.log('Payment started');
     navigator.navigate('Payment');
   }
 
