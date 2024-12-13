@@ -57,6 +57,7 @@ export const useLogin = (setIsAuthenticated: (value: boolean) => void) => {
         if (response.data.status === 200) {
           await AsyncStorage.setItem('userToken', response.data.token);
           await AsyncStorage.setItem('isLoggedIn', JSON.stringify(true));
+          await AsyncStorage.setItem('language', 'es');
           setIsAuthenticated(true);
         } else {
           Alert.alert('Login Failed', response.data.message || 'Invalid credentials');
@@ -87,7 +88,6 @@ export const useVerifyAuth = (setIsAuthenticated: (value: boolean) => void) => {
             setIsAuthenticated(true);
           }
         } catch (error: any) {
-          console.error('Error verifying authentication:', error.response?.data || error.message);
           setIsAuthenticated(false);
         }
       };
