@@ -7,6 +7,8 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 
 // Navigation
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList, PaymentStackParamList } from '../../types/navigationTypes';
 
 // Components
 import DialpadKeypad from "../../components/payment/DialpadKeypad";
@@ -21,7 +23,10 @@ const dialPadContent = [1, 2, 3, 4, 5, 6, 7, 8, 9, "delete", 0, "confirm"];
 const dialPadSize = width * 0.2;
 const dialPadTextSize = dialPadSize * 0.4;
 
-const NumberPadScreen = () => {
+type PaymentScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Payment'>;
+type PaymentScreenPaymentSetterNavigationProp = NativeStackNavigationProp<PaymentStackParamList, 'PaymentSetter'>;
+
+const NumberPadScreen: React.FC = () => {
   const navigator = useNavigation();
   const [amount, setAmount] = useState(0.0);
 

@@ -11,13 +11,8 @@ import CardReaderScreen from '../../screens/Payment/CardReaderScreen';
 import PINScreen from '../../screens/Payment/PINScreen';
 import NumberPadScreen from '../../screens/Payment/NumberPadScreen';
 
-type PaymentStackParamList = {
-    "Payment": undefined;
-    "Payment-Reader": { amount: number };
-    "Payment-Pin": undefined;
-    "Payment-Confirmed": undefined;
-    "Payment-Refused": undefined;
-};
+// Types
+import { PaymentStackParamList } from '../../types/navigationTypes';
 
 const PaymentStack = createNativeStackNavigator<PaymentStackParamList>();
 
@@ -30,7 +25,7 @@ const PaymentNavigator: React.FC = () => {
                 options={{ headerShown: false }}
             />
             <PaymentStack.Screen 
-                name="Payment-Reader" 
+                name="PaymentReader" 
                 options={{ headerShown: false }}
             >
                 {props => {
@@ -40,17 +35,17 @@ const PaymentNavigator: React.FC = () => {
                 }}
             </PaymentStack.Screen>
             <PaymentStack.Screen 
-                name="Payment-Pin" 
+                name="PaymentPin" 
                 component={PINScreen} 
                 options={{ headerShown: false }}
             />
             <PaymentStack.Screen 
-                name="Payment-Confirmed" 
+                name="PaymentConfirmed" 
                 component={PINScreen} 
                 options={{ headerShown: false }}
             />
             <PaymentStack.Screen 
-                name="Payment-Refused" 
+                name="PaymentRefused" 
                 component={PINScreen} 
                 options={{ headerShown: false }}
             />                        

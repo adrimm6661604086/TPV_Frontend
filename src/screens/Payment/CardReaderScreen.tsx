@@ -7,6 +7,10 @@ import { useNavigation } from '@react-navigation/native';
 import NfcManager, { NfcEvents, NfcTech } from 'react-native-nfc-manager';
 import MaterialCommunityIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 
+// Navigation
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { PaymentStackParamList } from '../../types/navigationTypes';
+
 // Utils
 import theme from '../../utils/theme';
 import { defaultStyles } from '../styles';
@@ -18,7 +22,9 @@ NfcManager.start();
 interface CardReaderScreenProps {
   amount: number;
 }
-
+  
+type CardReaderScreenNavigationProp = NativeStackNavigationProp<PaymentStackParamList,'PaymentReader'>;
+  
 const CardReaderScreen: React.FC<CardReaderScreenProps> = ({amount}) => {
   interface CardInfo {
     cardNumber: string;
@@ -26,7 +32,7 @@ const CardReaderScreen: React.FC<CardReaderScreenProps> = ({amount}) => {
     expiryDate: string;
   }
 
-  const navigator = useNavigation();
+  const navigator = useNavigation<CardReaderScreenNavigationProp>();
   const [cardInfo, setCardInfo] = useState<CardInfo | null>(null);
   const [nfcEnabled, setNfcEnabled] = useState(false);
   const [nfcTag, setNfcTag] = useState<number | null>(null);

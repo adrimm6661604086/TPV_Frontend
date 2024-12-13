@@ -10,3 +10,11 @@ export type BottomTabParamList = {
     Settings: undefined;
     Stats: undefined;
 };
+
+export type PaymentStackParamList = {
+    PaymentSetter: undefined;
+    PaymentReader: { amount: number };
+    PaymentPin: undefined;
+    PaymentConfirmed: undefined;
+    PaymentRefused: undefined;
+};
