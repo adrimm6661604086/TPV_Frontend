@@ -23,16 +23,6 @@ const HomeScreen: React.FC  = () => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigator.navigate('Profile')}>
-          <Icon name="person" size={32} color={theme.palette.primary.main} />
-        </TouchableOpacity>
-        <Text style={styles.userName}>TPV Virtual</Text>
-        <View style={styles.headerIcons}>
-          <Icon name="mail-outline" size={32} color={theme.palette.primary.main}/>
-        </View>
-      </View>
-
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Last week Balance</Text>
         <Text style={styles.balanceAmount}>1.234.567,89 $</Text>
@@ -75,7 +65,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.palette.background.light,
-    paddingTop: 50,
   },
   header: {
     flexDirection: 'row',
