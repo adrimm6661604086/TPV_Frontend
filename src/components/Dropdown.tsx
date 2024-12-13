@@ -1,56 +1,60 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  FlatList,
-  StyleSheet,
-} from 'react-native';
+import { View, Text, TouchableOpacity, Image, StyleSheet, FlatList, DimensionValue } from 'react-native';
 
-interface DropdownItem {
-  label: string;
-  value: string | number;
-}
+// Libraries
+import FeatherIcon from 'react-native-vector-icons/Feather';
+
+// Utils
+import theme from '../utils/theme';
 
 interface DropdownProps {
-  data: DropdownItem[];
-  onSelect: (item: DropdownItem) => void;
+  items: { label: string; value: string; image: any }[];
+  onSelect: (item: { label: string; value: string; image: any }) => void;
+  width: DimensionValue | number;
 }
 
-const Dropdown: React.FC<DropdownProps> = ({ data, onSelect }) => {
+const Dropdown: React.FC<DropdownProps> = ({ items, onSelect, width }) => {
   const [isOpen, setIsOpen] = useState(false); 
-  const [selectedValue, setSelectedValue] = useState<DropdownItem | null>(null); 
+  const [selectedItem, setSelectedItem] = useState<{ label: string; value: string; image: any } | null>(null); 
 
-  const handleSelect = (item: DropdownItem) => {
-    setSelectedValue(item);
+  const toggleDropdown = () => {
+    setIsOpen(prevState => !prevState);
+  };
+
+  const handleSelectItem = (item: { label: string; value: string; image: any }) => {
+    setSelectedItem(item); 
     setIsOpen(false); 
-    onSelect(item); 
+    if (onSelect) {
+      onSelect(item); 
+    }
   };
 
   return (
-    <View style={styles.container}>
-      {/* Botón principal */}
-      <TouchableOpacity
-        style={styles.dropdownButton}
-        onPress={() => setIsOpen(!isOpen)}
-      >
-        <Text style={styles.dropdownButtonText}>
-          {selectedValue ? selectedValue.label : 'Select an option'}
+    <View style={{...styles.container, width: width}}>
+      <TouchableOpacity onPress={toggleDropdown} style={styles.dropdownButton}>
+        <Image source={selectedItem?.image} style={styles.itemImage} />
+        <Text style={styles.selectedLabel}>
+          {selectedItem ? selectedItem.label : ''}
         </Text>
+        {isOpen ? (
+          <FeatherIcon name="chevron-up" size={24} color={theme.palette.primary.dark} />
+        ) : (
+          <FeatherIcon name="chevron-down" size={24} color={theme.palette.primary.dark} />
+        )}
       </TouchableOpacity>
-
-      {/* Lista desplegable */}
+      
       {isOpen && (
         <View style={styles.dropdownList}>
           <FlatList
-            data={data}
-            keyExtractor={(item) => item.value.toString()}
+            data={items}
+            keyExtractor={(item) => item.value}
             renderItem={({ item }) => (
               <TouchableOpacity
-                style={styles.dropdownItem}
-                onPress={() => handleSelect(item)}
+                style={styles.item}
+                onPress={() => handleSelectItem(item)}
               >
-                <Text style={styles.dropdownItemText}>{item.label}</Text>
+                <Image source={item.image} style={styles.itemImage} />
+                <Text style={styles.itemText}>{item.label}</Text>
               </TouchableOpacity>
             )}
           />
@@ -60,50 +64,54 @@ const Dropdown: React.FC<DropdownProps> = ({ data, onSelect }) => {
   );
 };
 
-export default Dropdown;
-
 const styles = StyleSheet.create({
-  appContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f8f9fa',
-  },
-  title: {
-    fontSize: 20,
-    marginBottom: 20,
-  },
   container: {
-    width: 200,
+    marginVertical: 10,
   },
   dropdownButton: {
-    backgroundColor: '#fff',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     padding: 10,
     borderWidth: 1,
-    borderColor: '#ccc',
     borderRadius: 5,
-    justifyContent: 'center',
-    alignItems: 'center',
+    borderColor: '#ccc',
+    backgroundColor: '#fff',
   },
-  dropdownButtonText: {
+  selectedLabel: {
     fontSize: 16,
     color: '#333',
   },
+  icon: {
+    width: 20,
+    height: 20,
+  },
   dropdownList: {
-    backgroundColor: '#fff',
+    position: 'absolute',
+    height: 100,
+    top: 50,
+    left: 0,
+    right: 0,
     borderWidth: 1,
-    borderColor: '#ccc',
     borderRadius: 5,
-    marginTop: 5,
-    maxHeight: 150, // Limita el tamaño máximo
+    borderColor: '#ccc',
+    backgroundColor: '#fff',
+    zIndex: 5,
   },
-  dropdownItem: {
+  item: {
+    flexDirection: 'row',
+    alignItems: 'center',
     padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
   },
-  dropdownItemText: {
+  itemImage: {
+    width: 24,
+    height: 24,
+    marginRight: 10,
+  },
+  itemText: {
     fontSize: 16,
     color: '#333',
   },
 });
+
+export default Dropdown;
