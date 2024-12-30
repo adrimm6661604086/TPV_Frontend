@@ -8,20 +8,21 @@ import FeatherIcon from 'react-native-vector-icons/Feather';
 import theme from '../utils/theme';
 
 interface DropdownProps {
-  items: { label: string; value: string; image: any }[];
-  onSelect: (item: { label: string; value: string; image: any }) => void;
+  items: { label: string; value: string; image?: any }[];
+  onSelect: (item: { label: string; value: string; image?: any }) => void;
   width: DimensionValue | number;
+  placeholder: string;
 }
 
-const Dropdown: React.FC<DropdownProps> = ({ items, onSelect, width }) => {
+const Dropdown: React.FC<DropdownProps> = ({ items, onSelect, width, placeholder }) => {
   const [isOpen, setIsOpen] = useState(false); 
-  const [selectedItem, setSelectedItem] = useState<{ label: string; value: string; image: any } | null>(null); 
+  const [selectedItem, setSelectedItem] = useState<{ label: string; value: string; image?: any } | null>(null); 
 
   const toggleDropdown = () => {
     setIsOpen(prevState => !prevState);
   };
 
-  const handleSelectItem = (item: { label: string; value: string; image: any }) => {
+  const handleSelectItem = (item: { label: string; value: string; image?: any }) => {
     setSelectedItem(item); 
     setIsOpen(false); 
     if (onSelect) {
@@ -34,7 +35,7 @@ const Dropdown: React.FC<DropdownProps> = ({ items, onSelect, width }) => {
       <TouchableOpacity onPress={toggleDropdown} style={styles.dropdownButton}>
         <Image source={selectedItem?.image} style={styles.itemImage} />
         <Text style={styles.selectedLabel}>
-          {selectedItem ? selectedItem.label : ''}
+          {selectedItem ? selectedItem.label : placeholder}
         </Text>
         {isOpen ? (
           <FeatherIcon name="chevron-up" size={24} color={theme.palette.primary.dark} />
