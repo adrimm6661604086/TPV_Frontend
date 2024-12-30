@@ -14,11 +14,11 @@ export const useRegister = (setCurrentComponent: (component: any) => void) => {
   const registerUser = async (formData: any) => {
     const {
       name, lastName, email, password, phoneNumber, DNI, postalCode,
-      address, city, country, IBAN, bankEntity,
+      address, city, country, IBAN, bankEntity, accountType
     } = formData;
 
     if (!name || !lastName || !email || !password || !phoneNumber || !DNI || !postalCode ||
-        !address || !city || !country || !IBAN || !bankEntity) {
+        !address || !city || !country || !IBAN || !bankEntity || !accountType) {
       Alert.alert('Error', 'Please fill out all fields');
       return;
     }
@@ -32,7 +32,7 @@ export const useRegister = (setCurrentComponent: (component: any) => void) => {
 
       if (response.data.status === 201) {
         Alert.alert('Success', 'User registered successfully');
-        setCurrentComponent('Login'); // Cambiar a tu componente de Login
+        setCurrentComponent('Login'); 
       }
     } catch (error) {
       console.error('Error during registration:', error);
@@ -51,11 +51,14 @@ export const useLogin = (setIsAuthenticated: (value: boolean) => void) => {
       }
   
       const userData = { email, password };
-  
+
+      
       try {
         const response = await axios.post(`${BACKEND_URL}/api/user/login-user`, userData);
+        
         if (response.data.status === 200) {
           await AsyncStorage.setItem('userToken', response.data.token);
+          await AsyncStorage.setItem('userId', response.data.user.id);
           await AsyncStorage.setItem('isLoggedIn', JSON.stringify(true));
           await AsyncStorage.setItem('language', 'es');
           setIsAuthenticated(true);
@@ -78,7 +81,7 @@ export const useVerifyAuth = (setIsAuthenticated: (value: boolean) => void) => {
         if (!token) return;
   
         try {
-          const response = await axios.get(`${BACKEND_URL}/api/users/verify-auth`, {
+          const response = await axios.get(`${BACKEND_URL}/api/user/verify-auth`, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
@@ -87,8 +90,9 @@ export const useVerifyAuth = (setIsAuthenticated: (value: boolean) => void) => {
           if (response.status === 200) {
             setIsAuthenticated(true);
           }
-        } catch (error: any) {
+        } catch (error) {
           setIsAuthenticated(false);
+          Alert.alert('Error Verifying', 'An error occurred. Please try again later.');
         }
       };
   
@@ -126,6 +130,7 @@ export const useUserBankAccount = (userId: string) => {
         setLoading(true);
         axios.get(`${BACKEND_URL}/api/account/${userId}`)
             .then((response) => {
+              console.log('response:', response);
                 setBankData(response.data.bankData);
                 setLoading(false);
             })
