@@ -1,11 +1,12 @@
 // React
 import React, { useState, useEffect } from 'react';
-import { View, Text, Button, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 
 // Libraries
 import { useNavigation } from '@react-navigation/native';
-import NfcManager, { NfcEvents, NfcTech } from 'react-native-nfc-manager';
+import NfcManager, { NfcTech, TagEvent } from 'react-native-nfc-manager';
 import MaterialCommunityIcon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { StripeProvider, useStripe } from '@stripe/stripe-react-native';
 
 // Navigation
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -14,152 +15,166 @@ import { PaymentStackParamList } from '../../types/navigationTypes';
 // Utils
 import theme from '../../utils/theme';
 import { defaultStyles } from '../styles';
+import { BACKEND_URL } from '@env';
 
 // Initialize NFC Manager
 NfcManager.start();
 
-
 interface CardReaderScreenProps {
   amount: number;
 }
-  
-type CardReaderScreenNavigationProp = NativeStackNavigationProp<PaymentStackParamList,'PaymentReader'>;
-  
-const CardReaderScreen: React.FC<CardReaderScreenProps> = ({amount}) => {
-  interface CardInfo {
-    cardNumber: string;
-    cardHolder: string;
-    expiryDate: string;
-  }
 
+type CardReaderScreenNavigationProp = NativeStackNavigationProp<
+  PaymentStackParamList,
+  'PaymentReader'
+>;
+
+const CardReaderScreen: React.FC<CardReaderScreenProps> = ({ amount }) => {
   const navigator = useNavigation<CardReaderScreenNavigationProp>();
-  const [cardInfo, setCardInfo] = useState<CardInfo | null>(null);
-  const [nfcEnabled, setNfcEnabled] = useState(false);
-  const [nfcTag, setNfcTag] = useState<number | null>(null);
+  const [nfcData, setNfcData] = useState<TagEvent | null>(null);
+  const { initPaymentSheet, presentPaymentSheet } = useStripe();
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true); // Comienza en modo lectura NFC
 
-  // const handleReadCard = () => {
-  //   const dummyCardInfo = {
-  //     cardNumber: '1234 5678 9012 3456',
-  //     cardHolder: 'John Doe',
-  //     expiryDate: '12/24',
-  //   };
-  //   setCardInfo(dummyCardInfo);
-  //   Alert.alert('Card Read', `Card Number: ${dummyCardInfo.cardNumber}`);
-  // };
+  useEffect(() => {
+    // Iniciar lectura de NFC al montar el componente
+    startNfcReading();
+    
+    return () => {
+      NfcManager.cancelTechnologyRequest();
+    };
+  }, []);
 
-  async function readNdef() {
+  const startNfcReading = async () => {
     try {
-      // register for the NFC tag with NDEF in it
       await NfcManager.requestTechnology(NfcTech.Ndef);
-      // the resolved tag object will contain `ndefMessage` property
       const tag = await NfcManager.getTag();
-      console.warn('Tag found', tag);
-    } catch (ex) {
-      console.warn('Oops!', ex);
+      setNfcData(tag);
+      Alert.alert('Credit Card Found', 'Proceeding to payment...');
+      await fetchPaymentSheetParams(); // Fetch params y comienza pago
+    } catch (error) {
+      console.warn('NFC Reading Error:', error);
+      Alert.alert('Error', 'Failed to read credit card. Try again.');
+      setLoading(false);
     } finally {
       NfcManager.cancelTechnologyRequest();
     }
   };
 
-  useEffect(() => {
-    // (async () => {
-    //   const enabled = await NfcManager.isEnabled();
-    //   setNfcEnabled(enabled);
-    //   await readNdef();
-    // })();
-    setNfcTag(null);
-    setNfcEnabled(true);
-  }, []);
+  // Obtener parámetros para Payment Sheet
+  const fetchPaymentSheetParams = async () => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/API/transaction/create-payment-stripe`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount: amount,
+          card: nfcData,
+          currency: 'usd',
+        }),
+      });
+
+      const { clientSecret } = await response.json();
+      setClientSecret(clientSecret);
+      await initializePaymentSheet();
+    } catch (error) {
+      console.warn('Payment initialization error:', error);
+      Alert.alert('Error', 'Failed to initialize payment. Try again.');
+    }
+  };
+
+  // Inicializar Payment Sheet
+  const initializePaymentSheet = async () => {
+    if (!clientSecret) return;
+
+    const { error } = await initPaymentSheet({
+      paymentIntentClientSecret: clientSecret,
+      merchantDisplayName: 'TPV Virtual',
+      allowsDelayedPaymentMethods: true,
+    });
+
+    if (error) {
+      Alert.alert('Error initializing payment sheet', error.message);
+    } else {
+      openPaymentSheet();
+    }
+  };
+
+  // Mostrar Payment Sheet
+  const openPaymentSheet = async () => {
+    const { error } = await presentPaymentSheet();
+
+    if (error) {
+      Alert.alert(`Payment error: ${error.code}`, error.message);
+    } else {
+      Alert.alert('Payment successful', 'Thank you for your purchase!');
+      // Almacenar la transferencia en el servidor
+      await fetch(`${BACKEND_URL}/transaction/store-payment`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          paymentIntentId: clientSecret?.split('_secret')[0],
+          
+        }),
+      });
+    }
+  };
 
   return (
-    <View style={styles.container}>
-      <TouchableOpacity
-        onPress={() => navigator.goBack()}
-        style={defaultStyles.closeIcon}
-      >
-         <MaterialCommunityIcon 
-          name='close' 
-          size={32} 
-          color={theme.palette.primary.main}
-        />
-      </TouchableOpacity>
-     
-      {
-        nfcEnabled && !nfcTag ? ( // leyendo tarjeta, no encontrada = leyendo
-          <>
-            <MaterialCommunityIcon 
-            name='credit-card-wireless-outline' 
-            size={192} 
-            color={theme.palette.default.main}
-            style={{ 
-              ...styles.nfcIcon,
-              borderColor: theme.palette.default.main,
-            }}/>
-            <Text 
-              style={{
-                ...styles.text,
-                color: theme.palette.default.main,
-              }}
-            >
-              Hold the Credit Card close to the device
-            </Text>
-          </>
-        ) : !nfcEnabled && !nfcTag ? ( // no leyendo tarjeta, no encontrada = fallo de lectura
-          <>
-            <MaterialCommunityIcon
-              name='credit-card-remove-outline'
-              size={192}
-              color={theme.palette.error.main}
-              style={{ 
-                ...styles.nfcIcon,
-                borderColor: theme.palette.error.main,
-              }}
-            />
-            <Text 
-              style={{
-                ...styles.text,
-                color: theme.palette.error.main,
-              }}
-            >
-              Error reading the credit card
-            </Text>
-          </>
-          
-        ) : !nfcEnabled && nfcTag ? ( // no leyendo tarjeta, encontrada = tarjeta encontrada
-          <>
-            <MaterialCommunityIcon
-            name='credit-card-check-outline'
-            size={192}
+    <StripeProvider
+      publishableKey={STRIPE_PUBLIC_KEY}
+      merchantIdentifier="merchant.identifier" // required for Apple Pay
+      urlScheme="com.TPVVirtual.app" // required for 3D Secure and bank redirects
+    >
+      <View style={styles.container}>
+        <TouchableOpacity
+          onPress={() => navigator.goBack()}
+          style={defaultStyles.closeIcon}
+        >
+          <MaterialCommunityIcon 
+            name='close' 
+            size={32} 
             color={theme.palette.primary.main}
-            style={{ 
-              ...styles.nfcIcon,
-              borderColor: theme.palette.primary.main,
-            }}
-            />
-            <Text 
-              style={{
-                ...styles.text,
-                color: theme.palette.primary.main,
-              }}
-            >
-              Credit Card Confirmed
+          />
+        </TouchableOpacity>
+
+        {
+          loading && !nfcData ? (
+            <>
+              <MaterialCommunityIcon 
+                name='credit-card-wireless-outline' 
+                size={192} 
+                color={theme.palette.default.main}
+                style={{ ...styles.nfcIcon, borderColor: theme.palette.default.main }}
+              />
+              <Text style={{ ...styles.text, color: theme.palette.default.main }}>
+                Hold the Credit Card close to the device
+              </Text>
+            </>
+          ) : nfcData ? (
+            <>
+              <MaterialCommunityIcon
+                name='credit-card-check-outline'
+                size={192}
+                color={theme.palette.primary.main}
+                style={{ ...styles.nfcIcon, borderColor: theme.palette.primary.main }}
+              />
+              <Text style={{ ...styles.text, color: theme.palette.primary.main }}>
+                Processing payment...
+              </Text>
+            </>
+          ) : (
+            <Text style={{ ...styles.text, color: theme.palette.error.main }}>
+              NFC Reading Error
             </Text>
-          </>
-        ) : (<Text style={{
-          ...styles.text, color:theme.palette.error.main
-        }}>NFC ERROR</Text>)
-      }
-      {/* <Text style={styles.title}>Card Reader</Text>
-      }
-      {/* {cardInfo && (
-        <View style={styles.cardInfo}>
-          <Text>Card Number: {cardInfo.cardNumber}</Text>
-          <Text>Card Holder: {cardInfo.cardHolder}</Text>
-          <Text>Expiry Date: {cardInfo.expiryDate}</Text>
-          <Text> {amount} </Text>
-        </View>
-      )} */}
-    </View>
+          )
+        }
+      </View>
+    </StripeProvider>
   );
 };
 
@@ -169,15 +184,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#F0F0F0',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
-  cardInfo: {
-    marginTop: 20,
-    alignItems: 'center',
   },
   nfcIcon: {  
     borderRadius: 200,
