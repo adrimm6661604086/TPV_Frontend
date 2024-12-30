@@ -16,10 +16,6 @@ type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'M
 const HomeScreen: React.FC  = () => {  
   const navigator = useNavigation<HomeScreenNavigationProp>();
 
-  const startPayment = () => {
-    navigator.navigate('Payment');
-  }
-
   return (
     <View style={styles.container}>
       <View style={styles.card}>
@@ -53,7 +49,7 @@ const HomeScreen: React.FC  = () => {
         </ScrollView>
       </View>
 
-      <TouchableOpacity style={styles.paymentButton} onPress={startPayment}>
+      <TouchableOpacity style={styles.paymentButton} onPress={() => {navigator.navigate('Payment')}}>
         <Text style={styles.paymentButtonText}>Make Payment</Text>
       </TouchableOpacity>
     </View>
@@ -65,15 +61,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.palette.background.light,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    marginBottom: 10,
-  },
   userName: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: 'bold',
   },
   headerIcons: {
@@ -83,7 +72,7 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: '#FFFFFF',
     margin: 15,
-    padding: 20,
+    padding: 16,
     borderRadius: 10,
     shadowColor: '#000',
     shadowOpacity: 0.1,
@@ -91,12 +80,12 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   cardTitle: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: '600',
     marginBottom: 10,
   },
   balanceAmount: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: 'bold',
   },
   balanceChange: {
@@ -133,7 +122,7 @@ const styles = StyleSheet.create({
   },
   paymentButtonText: {
     color: '#FFFFFF',
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: 'bold',
   },
 });

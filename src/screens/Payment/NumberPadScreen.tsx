@@ -63,7 +63,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: theme.palette.background.light,
         paddingHorizontal: 10,
-        paddingVertical: 50,
     },
     textContainer: {
         marginVertical: 50,
@@ -71,12 +70,12 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     pinText: {
-        fontSize: 30,
+        fontSize: 24,
         fontWeight: "medium",
         color: theme.palette.primary.main,
     },
     pinSubText: {
-        fontSize: 18,
+        fontSize: 16,
         fontWeight: "medium",
         color: theme.palette.text.secondary,
     },
@@ -84,7 +83,7 @@ const styles = StyleSheet.create({
         width: 200,
         textAlign: "center",
         color: theme.palette.primary.main,
-        fontSize: 30,
+        fontSize: 24,
         fontWeight: "medium",
         borderWidth: 1,
         borderColor: theme.palette.primary.dark,

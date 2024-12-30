@@ -31,7 +31,7 @@ const BottomTabNavigator: React.FC  = () => {
         </TouchableOpacity>
         <Text style={styles.userName}>TPV Virtual</Text>
         <View style={styles.headerIcons}>
-          <Icon name="mail-outline" size={32} color={theme.palette.primary.main}/>
+          <Icon name="mail-outline" size={24} color={theme.palette.primary.main}/>
         </View>
       </View>
         <Tab.Navigator
@@ -45,7 +45,7 @@ const BottomTabNavigator: React.FC  = () => {
               } else if (route.name === 'Settings') {
                 iconName = 'settings';
               }
-              return <Icon name={iconName ?? 'default-icon'} size={42} color={color} />;
+              return <Icon name={iconName ?? 'default-icon'} size={32} color={color} />;
             },
             tabBarShowLabel: false,
             tabBarActiveTintColor: theme.palette.primary.main,
@@ -64,7 +64,7 @@ const BottomTabNavigator: React.FC  = () => {
             },
             tabBarStyle: {
               backgroundColor: theme.palette.background.default,
-              height: 80,
+              height: 60,
             },
           })}
         >
@@ -78,12 +78,12 @@ const BottomTabNavigator: React.FC  = () => {
 
 const styles = StyleSheet.create({
   header: {
+    backgroundColor: theme.palette.background.light,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 50,
     paddingHorizontal: 20,
-    marginBottom: 10,
+    paddingTop: 20,
   },
   userName: {
     fontSize: 20,
