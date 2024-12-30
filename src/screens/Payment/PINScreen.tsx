@@ -1,9 +1,32 @@
 // React
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+
+// Stripe
+import { StripeProvider } from '@stripe/stripe-react-native';
+
+interface PINScreenProps {
+    amount: number;
+    creditCardNumber: string;
+    creditCardHolder: string;
+    expiryDate: string;
+    cvc: string;
+    PIN: string;
+}
 
 const PINScreen: React.FC = () => {
     const [pin, setPin] = useState('');
+    const [publishableKey, setPublishableKey] = useState('');
+    
+    const fetchPublishableKey = async () => {
+        // const key = await fetchKey(); // fetch key from your server here
+        // setPublishableKey(key);
+    };
+
+    useEffect(() => {
+        fetchPublishableKey();
+    }, []);
+    
 
     const handleNumberPress = (num: string) => {
         if (pin.length < 4) {
@@ -20,6 +43,11 @@ const PINScreen: React.FC = () => {
     };
 
     return (
+        <StripeProvider
+            publishableKey={publishableKey}
+            merchantIdentifier="merchant.identifier" // required for Apple Pay
+            urlScheme="your-url-scheme" // required for 3D Secure and bank redirects
+            >
         <View style={styles.container}>
             <Text style={styles.title}>Enter PIN</Text>
             <TextInput
@@ -46,6 +74,7 @@ const PINScreen: React.FC = () => {
                 </TouchableOpacity>
             </View>
         </View>
+    </StripeProvider>
     );
 };
 
