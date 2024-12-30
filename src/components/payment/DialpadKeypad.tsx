@@ -35,33 +35,43 @@ const DialpadKeypad: React.FC<DialpadKeypadProps> = ({
 
     const handlePress = (item: number | string) => {
         if (item === "delete") {
+            // Elimina el último dígito del monto
             const valueWithoutDecimal = Math.floor(amount * 100); 
             const newValue = Math.floor(valueWithoutDecimal / 10);
             setAmount(newValue / 100);
         } else if (item === "confirm") {
+            // Confirma el monto para proceder al pago
             if (amount === 0) {
                 Alert.alert("Payment", "Please enter an amount to pay.");
                 return;
             } else {
                 Alert.alert(
                     "Payment",
-                    `Do you want to pay ${amount.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} $?`,
+                    `Do you want to pay ${amount.toLocaleString('es-ES', { 
+                        minimumFractionDigits: 2, 
+                        maximumFractionDigits: 2 
+                    })} $?`,
                     [
-                    {
-                        text: "Cancel",
-                        onPress: () => console.log("Cancel Pressed"),
-                        style: "cancel"
-                    },
-                    { text: "OK", onPress: () => navigation.navigate("PaymentReader", { amount }) }
+                        {
+                            text: "Cancel",
+                            onPress: () => console.log("Cancel Pressed"),
+                            style: "cancel"
+                        },
+                        { 
+                            text: "OK", 
+                            onPress: () => navigation.navigate("PaymentReader", { amount }) 
+                        }
                     ]
                 );
             }
         } else {
-            const currentStr = amount.toString().replace('.', '');
-            const newAmountStr = currentStr + item;
-            setAmount(parseFloat(newAmountStr) / 100); 
-          }
-      };
+            // Maneja la entrada de números y ceros
+            const currentStr = amount.toFixed(2).replace('.', '').replace(/^0+/, ''); // Elimina ceros iniciales
+            const newAmountStr = currentStr + item; // Añade el nuevo dígito o cero
+            setAmount(parseFloat(newAmountStr) / 100); // Convierte de centavos a valor monetario
+        }
+    };
+    
       
 
     return (
