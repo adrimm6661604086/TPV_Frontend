@@ -78,7 +78,7 @@ const CardReaderScreen: React.FC<CardReaderScreenProps> = ({amount}) => {
   };
 
   useEffect(() => {
-    navigator.navigate("PinScreen", { amount });
+    navigator.navigate("PaymentPin");
   }, [nfcData]);
 
   if (!nfcEnabled) {
