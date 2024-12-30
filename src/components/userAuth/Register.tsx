@@ -38,6 +38,14 @@ enum PasswordStrength {
 
 const iconsize = 24;
 
+const countries = [
+  { label: "United States", value: "us" },
+  { label: "Spain", value: "es" },
+  { label: "England", value: "en" },
+  { label: "Germany", value: "de" },
+  { label: "Italy", value: "it" },
+];
+
 const Register: React.FC<RegisterProps> = ({ currentComponent, setCurrentComponent }) => {
   const [step, setStep] = useState(1);
 
@@ -54,6 +62,7 @@ const Register: React.FC<RegisterProps> = ({ currentComponent, setCurrentCompone
     country: '',
     IBAN: '',
     bankEntity: 'BankSim',
+    accountType: 'individual',
   });
 
   const [passwordStrength, setPasswordStrength] = useState<PasswordStrength>(PasswordStrength.undefined);
@@ -260,11 +269,13 @@ const Register: React.FC<RegisterProps> = ({ currentComponent, setCurrentCompone
               value={formData.city}
               onChangeText={(text) => handleInputChange('city', text)}
             />
-            <TextInput
-              style={styles.input}
+            <Dropdown
+              items={countries}
+              width={"100%"}
               placeholder="Country"
-              value={formData.country}
-              onChangeText={(text) => handleInputChange('country', text)}
+              onSelect={(selectedItem) =>
+                handleInputChange('country', selectedItem.value.toString())
+              }
             />
           </>
         )}
@@ -278,16 +289,19 @@ const Register: React.FC<RegisterProps> = ({ currentComponent, setCurrentCompone
               onChangeText={(text) => handleInputChange('IBAN', text)}
             />
             <Dropdown
-              data={[
+              items={[
                 { label: 'BankSim', value: 'BankSim' },
                 { label: 'BBVA', value: 'BBVA' },
                 { label: 'Caixabank', value: 'Caixabank' },
                 { label: 'Santander', value: 'Santander' },
               ]}
+              width={"100%"}
+              placeholder="Bank Entity"
               onSelect={(selectedItem) =>
                 handleInputChange('bankEntity', selectedItem.value.toString())
               }
             />
+
           </>
         )}
 
