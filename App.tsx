@@ -1,12 +1,10 @@
 // React
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { SafeAreaView, StyleSheet } from 'react-native';
 
 // Libraries
 import { NavigationContainer } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import axios from 'axios';
 
 // Navigators
 import BottomTabNavigator from './src/components/navigation/BottomTabNavigator';
@@ -27,7 +25,6 @@ const RootStack = createNativeStackNavigator<RootStackParamList>();
 
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [token, setToken] = useState<string | null>(null);
 
   useVerifyAuth(setIsAuthenticated);
 
