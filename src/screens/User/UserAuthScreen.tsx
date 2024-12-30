@@ -17,6 +17,9 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../types/navigationTypes';
 import { useNavigation } from '@react-navigation/native';
 
+// Utils
+import theme from '../../utils/theme';
+
 type UserAuthScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'UserAuth'>;
 
 export const enum AuthComponent {
@@ -60,7 +63,7 @@ const UserAuthScreen: React.FC<UserAuthProps> = ({ setIsAuthenticated }) => {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    backgroundColor: '#F0F0F0',
+    backgroundColor: theme.palette.background.light,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -69,7 +72,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   bg: {
-    backgroundColor: '#007AFF',
+    backgroundColor: theme.palette.primary.main,
     position: 'absolute',
     top: 0,
     left: 0,
@@ -94,7 +97,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   button: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: theme.palette.primary.main,
     paddingVertical: 15,
     borderRadius: 10,
     alignItems: 'center',
