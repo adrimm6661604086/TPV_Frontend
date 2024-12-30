@@ -22,6 +22,7 @@ import { useLogin } from '../../hooks/UserHooks';
 // Utils
 import { AuthComponent } from '../../screens/User/UserAuthScreen';
 import styles from './styles';
+import theme from '../../utils/theme';
 
 interface LoginProps {
   currentComponent: AuthComponent;
@@ -33,6 +34,7 @@ const Login: React.FC<LoginProps> = ({ currentComponent, setCurrentComponent, se
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const { loginUser } = useLogin(setIsAuthenticated);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = () => {
     loginUser(email, password);
@@ -58,13 +60,22 @@ const Login: React.FC<LoginProps> = ({ currentComponent, setCurrentComponent, se
             </View>
             <View style={styles.twoSectionContainer}>
               <FeatherIcon name="lock" size={24} style={styles.icon} />
+              <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
               <TextInput
-                style={styles.input}
+                style={{ ...styles.input, flex: 1 }}
                 placeholder="Password"
                 value={password}
                 onChangeText={setPassword}
-                secureTextEntry
+                secureTextEntry={!showPassword}
               />
+              <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                <FeatherIcon name={showPassword ? "eye-off" : "eye"} size={24} 
+                style={{
+                  ...styles.icon,
+                  marginLeft: 10,
+                }} />
+              </TouchableOpacity>
+              </View>
             </View>
           </View>
           <View style={styles.twoButtonsContainer}>
@@ -77,7 +88,7 @@ const Login: React.FC<LoginProps> = ({ currentComponent, setCurrentComponent, se
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={{ ...styles.button, backgroundColor: '#2196F3' }}
+              style={{ ...styles.button, backgroundColor: theme.palette.primary.main }}
               onPress={handleLogin}
             >
               <Text style={styles.buttonText}>Login</Text>
