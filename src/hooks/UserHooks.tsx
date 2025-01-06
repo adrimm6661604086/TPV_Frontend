@@ -43,7 +43,7 @@ export const useRegister = (setCurrentComponent: (component: any) => void) => {
   return { registerUser };
 };
 
-export const useLogin = (setIsAuthenticated: (value: boolean) => void) => {
+export const useLogin = (setIsAuthenticated: (value: boolean) => void) => {   
     const loginUser = async (email: string, password: string) => {
       if (!email || !password) {
         Alert.alert('Error', 'Please fill in all fields.');
@@ -70,7 +70,7 @@ export const useLogin = (setIsAuthenticated: (value: boolean) => void) => {
         Alert.alert('Error', 'An error occurred. Please try again later.');
       }
     };
-  
+
     return { loginUser };
 };
 
@@ -100,45 +100,68 @@ export const useVerifyAuth = (setIsAuthenticated: (value: boolean) => void) => {
     }, []);
 };
 
-export const useUser = (userId: string) => {
+export const useUser = () => {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         setLoading(true);
-        axios.get(`${BACKEND_URL}/api/user/${userId}`)
-            .then((response) => {
+        const fetchUser = async () => {
+            try {
+                const userId = await AsyncStorage.getItem('userId');
+                if (!userId) {
+                    setError('User ID not found in AsyncStorage');
+                    setLoading(false);
+                    return;
+                }
+                const response = await axios.get(`${BACKEND_URL}/api/user/${userId}`);
                 setUser(response.data.user);
+            } catch (error) {
+                if (axios.isAxiosError(error) && error.response) {
+                    setError(error.response.data);
+                } else {
+                    setError('An unknown error occurred');
+                }
+            } finally {
                 setLoading(false);
-            })
-            .catch((error) => {
-                setError(error.response.data);
-                setLoading(false);
-            });
-    }, [userId]);
+            } 
+        }
+        fetchUser();
+    }, []);
 
     return { user, loading, error };
 };
 
-export const useUserBankAccount = (userId: string) => {
+export const useUserBankAccount = () => {
     const [bankData, setBankData] = useState<any | null>(null);
     const [loadingBankData, setLoading] = useState<boolean>(true);
     const [errorBankData, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        setLoading(true);
-        axios.get(`${BACKEND_URL}/api/account/${userId}`)
-            .then((response) => {
-              console.log('response:', response);
-                setBankData(response.data.bankData);
-                setLoading(false);
-            })
-            .catch((error) => {
-                setError(error.response.data);
-                setLoading(false);
-            });
-    }, [userId]);
+      const fetchBankData = async () => {
+          setLoading(true);
+          try {
+              const userId = await AsyncStorage.getItem('userId');
+              if (!userId) {
+                  setError('User ID not found in AsyncStorage');
+                  setLoading(false);
+                  return;
+              }
+              const response = await axios.get(`${BACKEND_URL}/api/account/${userId}`);
+              setBankData(response.data.bankData);
+          } catch (error) {
+              if (axios.isAxiosError(error) && error.response) {
+                  setError(error.response.data);
+              } else {
+                  setError('An unknown error occurred');
+              }
+          } finally {
+              setLoading(false);
+          }
+      }
+      fetchBankData();
+    }, []);
 
     return { bankData, loadingBankData, errorBankData };
 };
