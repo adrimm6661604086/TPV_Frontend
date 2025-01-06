@@ -20,7 +20,7 @@ const PaymentNavigator: React.FC = () => {
     return (
         <PaymentStack.Navigator>
             <PaymentStack.Screen 
-                name="Payment" 
+                name="PaymentSetter" 
                 component={NumberPadScreen} 
                 options={{ headerShown: false }}
             />
@@ -36,10 +36,15 @@ const PaymentNavigator: React.FC = () => {
             </PaymentStack.Screen>
             <PaymentStack.Screen 
                 name="PaymentPin" 
-                component={PINScreen} 
                 options={{ headerShown: false }}
-            />
-            <PaymentStack.Screen 
+            >
+                {props => {
+                        const { route } = props;
+                        const cardData = route.params?.cardData;
+                        return <PINScreen {...props} cardData={cardData}/>;
+                    }}   
+            </PaymentStack.Screen>
+            {/* <PaymentStack.Screen 
                 name="PaymentConfirmed" 
                 component={PINScreen} 
                 options={{ headerShown: false }}
@@ -48,7 +53,7 @@ const PaymentNavigator: React.FC = () => {
                 name="PaymentRefused" 
                 component={PINScreen} 
                 options={{ headerShown: false }}
-            />                        
+            />                         */}
 
         </PaymentStack.Navigator>
     )

@@ -11,10 +11,12 @@ export type BottomTabParamList = {
     Stats: undefined;
 };
 
+import { CreditCard } from "./interfaces";
+
 export type PaymentStackParamList = {
     PaymentSetter: undefined;
     PaymentReader: { amount: number };
-    PaymentPin: undefined;
+    PaymentPin: { cardData: CreditCard };
     PaymentConfirmed: undefined;
     PaymentRefused: undefined;
 };
