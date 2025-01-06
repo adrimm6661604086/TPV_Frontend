@@ -30,9 +30,10 @@ interface ProfileScreenProps {
 
 const ProfileScreen: React.FC<ProfileScreenProps> = ({ setIsAuthenticated }) => {
   const navigator = useNavigation<ProfileScreenNavigationProp>();
+  
 
-  const { user, loading, error } = useUser('7221985b-2a2d-4081-a290-c0dd0a4ad65d');
-  const { bankData, loadingBankData, errorBankData } = useUserBankAccount('7221985b-2a2d-4081-a290-c0dd0a4ad65d');
+  const { user, loading, error } = useUser();
+  const { bankData, loadingBankData, errorBankData } = useUserBankAccount();
 
   const handleLogout = () => {
     Alert.alert(
@@ -61,8 +62,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ setIsAuthenticated }) => 
         }
       ]
     );
-  };
-  
+  };  
   
 
   return (
@@ -83,9 +83,8 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ setIsAuthenticated }) => 
             <FeatherIcon name="user" size={48} color="#FFFFFF" />
           </View>
           <View>
-            <Text style={styles.name}>{user?.name}</Text>
+            <Text style={styles.name}>{`${user?.name} ${user?.lastName}`}</Text>
             <Text style={styles.date}>{user?.createdAt}</Text>
-            <Text style={styles.sectionTitle}>{user?.country}</Text>
           </View>
         </View>
         <TouchableOpacity>
@@ -174,25 +173,20 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.palette.background.light,
     paddingHorizontal: 20,
-    paddingTop: 50,
+    paddingTop: 20,
   },
   header: {
     flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginLeft: 10,
+    alignItems: 'center',  
   },
   profileCard: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    padding: 20,
+    padding: 15,
     borderRadius: 10,
-    marginBottom: 20,
+
+    marginVertical: 10,
     justifyContent: 'space-between',
     shadowColor: '#000',
     shadowOpacity: 0.1,
@@ -213,7 +207,7 @@ const styles = StyleSheet.create({
     marginRight: 15,
   },
   name: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
   },
   date: {
@@ -235,9 +229,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     backgroundColor: '#FFFFFF',
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
     borderRadius: 10,
-    marginBottom: 20,
+    marginVertical: 10,
     shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowOffset: { width: 0, height: 2 },
@@ -250,13 +245,12 @@ const styles = StyleSheet.create({
     width: '80%',
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 5,
   },
   icon: {
     marginRight: 20,
   },
   infoTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
   },
   infoSubtitle: {
@@ -268,11 +262,10 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',
-    marginTop: 10,
   },
   logoutButtonText: {
     color: '#FFFFFF',
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: 'bold',
   },
 });
