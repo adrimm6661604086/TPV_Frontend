@@ -35,12 +35,10 @@ const DialpadKeypad: React.FC<DialpadKeypadProps> = ({
 
     const handlePress = (item: number | string) => {
         if (item === "delete") {
-            // Elimina el último dígito del monto
             const valueWithoutDecimal = Math.floor(amount * 100); 
             const newValue = Math.floor(valueWithoutDecimal / 10);
             setAmount(newValue / 100);
         } else if (item === "confirm") {
-            // Confirma el monto para proceder al pago
             if (amount === 0) {
                 Alert.alert("Payment", "Please enter an amount to pay.");
                 return;
@@ -65,10 +63,9 @@ const DialpadKeypad: React.FC<DialpadKeypadProps> = ({
                 );
             }
         } else {
-            // Maneja la entrada de números y ceros
-            const currentStr = amount.toFixed(2).replace('.', '').replace(/^0+/, ''); // Elimina ceros iniciales
-            const newAmountStr = currentStr + item; // Añade el nuevo dígito o cero
-            setAmount(parseFloat(newAmountStr) / 100); // Convierte de centavos a valor monetario
+            const currentStr = amount.toFixed(2).replace('.', '').replace(/^0+/, ''); 
+            const newAmountStr = currentStr + item; 
+            setAmount(parseFloat(newAmountStr) / 100); 
         }
     };
     
@@ -85,7 +82,9 @@ const DialpadKeypad: React.FC<DialpadKeypadProps> = ({
                     <View
                         style={[
                         {
-                            backgroundColor: item === "" ? theme.palette.background.light : theme.palette.primary.main,
+                            backgroundColor: item === "delete" ? theme.palette.error.main 
+                            : item === "confirm" ? theme.palette.success.main 
+                            : theme.palette.text.secondary,
                             width: dialPadSize,
                             height: dialPadSize,
                         },
