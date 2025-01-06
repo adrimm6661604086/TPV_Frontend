@@ -1,12 +1,16 @@
 // React
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import React, {useState, useEffect} from 'react';
+import { View, Text, ActivityIndicator, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 
 // Libraries
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types/navigationTypes'; 
+
+// Hooks
+import useTransactions from '../hooks/TransactionHooks';
 
 // Utils
 import theme from '../utils/theme';
@@ -16,12 +20,54 @@ type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'M
 const HomeScreen: React.FC  = () => {  
   const navigator = useNavigation<HomeScreenNavigationProp>();
 
+  const [LastWeekBalance, setLastWeekBalance] = useState(0);
+  const [TodayBalance, setTodayBalance] = useState(0);
+  
+
+  const { transactions, loading, error, getBalanceOfLastWeek, getBalanceOfToday, fetchTransactions } = useTransactions();
+
+  useEffect(() => {
+    setLastWeekBalance(getBalanceOfLastWeek());
+    setTodayBalance(getBalanceOfToday());
+  }, [transactions]);
+
+  const parseDate = (isoDate : string) => {
+    const date = new Date(isoDate);
+  
+    const options: Intl.DateTimeFormatOptions = {
+      day: '2-digit',
+      month: 'long', 
+      year: 'numeric',
+    };
+  
+    return date.toLocaleDateString('es-ES', options); // 'es-ES' para español
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size={32} color={theme.palette.primary.main} />
+      </View>
+    );
+  } 
+  else if (error) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.errorMessage}>Ocurrió un error: {error}</Text>
+        <TouchableOpacity style={styles.reloadButton} onPress={fetchTransactions}>
+          <MaterialIcon name="refresh" size={24} color="#FFFFFF" />
+          <Text style={styles.reloadButtonText}>Intentar nuevamente</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Last week Balance</Text>
-        <Text style={styles.balanceAmount}>1.234.567,89 $</Text>
-        <Text style={styles.balanceChange}>(+2.273 $)</Text>
+        <Text style={styles.balanceAmount}>{LastWeekBalance} $</Text>
+        <Text style={styles.balanceChange}>({TodayBalance} $)</Text>
       </View>
 
       <View style={styles.card}>
@@ -32,18 +78,16 @@ const HomeScreen: React.FC  = () => {
           </TouchableOpacity>
         </View>
         <ScrollView>
-          {[
-            { amount: '2400,00 $', date: '1/1/24 9:00' },
-            { amount: '29,99 $', date: '2/2/24 10:00' },
-            { amount: '12,99 $', date: '3/3/24 11:00' },
-            { amount: '5,45 $', date: '4/4/24 12:00' },
-            { amount: '6,32 $', date: '5/5/24 13:00' },
-            { amount: '0,99 $', date: '5/5/24 10:30' },
-            { amount: '8,92 $', date: '5/5/24 13:00' },
-          ].map((item, index) => (
+        {transactions.map((item, index) => (
             <View key={index} style={styles.movementItem}>
-              <Text style={styles.movementAmount}>{item.amount}</Text>
-              <Text style={styles.movementDate}>{item.date}</Text>
+              {
+                item.transactionType === 'PAYMENT' ?
+                  <MaterialCommunityIcons name="cash-fast" size={24} color="green" />
+                  :
+                  <MaterialCommunityIcons name="cash-refund" size={24} color="red" />
+              }
+              <Text style={styles.movementAmount}>{item.amount} $</Text>
+              <Text style={styles.movementDate}>{parseDate(item.transactionDate)}</Text>
             </View>
           ))}
         </ScrollView>
@@ -124,6 +168,27 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  errorMessage: {
+    fontSize: 16,
+    color: 'red',
+    marginVertical: 20,
+    textAlign: 'center',
+  },
+  reloadButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.palette.primary.main,
+    paddingVertical: 10,
+    marginHorizontal: 20,
+    borderRadius: 8,
+  },
+  reloadButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginLeft: 10,
   },
 });
 
