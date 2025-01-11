@@ -1,6 +1,6 @@
 // React
 import React, {useState, useEffect} from 'react';
-import { View, Text, ActivityIndicator, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, ActivityIndicator, StyleSheet, TouchableOpacity, ScrollView, Image } from 'react-native';
 
 // Libraries
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
@@ -14,6 +14,7 @@ import useTransactions from '../hooks/TransactionHooks';
 
 // Utils
 import theme from '../utils/theme';
+import { parseDate } from '../utils/index';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Main'>;
 
@@ -22,26 +23,14 @@ const HomeScreen: React.FC  = () => {
 
   const [LastWeekBalance, setLastWeekBalance] = useState(0);
   const [TodayBalance, setTodayBalance] = useState(0);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);  
   
-
   const { transactions, loading, error, getBalanceOfLastWeek, getBalanceOfToday, fetchTransactions } = useTransactions();
 
   useEffect(() => {
     setLastWeekBalance(getBalanceOfLastWeek());
     setTodayBalance(getBalanceOfToday());
   }, [transactions]);
-
-  const parseDate = (isoDate : string) => {
-    const date = new Date(isoDate);
-  
-    const options: Intl.DateTimeFormatOptions = {
-      day: '2-digit',
-      month: 'long', 
-      year: 'numeric',
-    };
-  
-    return date.toLocaleDateString('es-ES', options); // 'es-ES' para español
-  };
 
   if (loading) {
     return (
@@ -56,7 +45,7 @@ const HomeScreen: React.FC  = () => {
         <Text style={styles.errorMessage}>Ocurrió un error: {error}</Text>
         <TouchableOpacity style={styles.reloadButton} onPress={fetchTransactions}>
           <MaterialIcon name="refresh" size={24} color="#FFFFFF" />
-          <Text style={styles.reloadButtonText}>Intentar nuevamente</Text>
+          <Text style={styles.reloadButtonText}>Try Again</Text>
         </TouchableOpacity>
       </View>
     );
@@ -64,6 +53,7 @@ const HomeScreen: React.FC  = () => {
 
   return (
     <View style={styles.container}>
+      
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Last week Balance</Text>
         <Text style={styles.balanceAmount}>{LastWeekBalance} $</Text>
@@ -73,22 +63,47 @@ const HomeScreen: React.FC  = () => {
       <View style={styles.card}>
         <View style={styles.movementsHeader}>
           <Text style={styles.cardTitle}>Last movements</Text>
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {navigator.navigate('ShowMore', {transactions})}}
+          >
             <Text style={styles.showMore}>Show more ...</Text>
           </TouchableOpacity>
         </View>
-        <ScrollView>
-        {transactions.map((item, index) => (
-            <View key={index} style={styles.movementItem}>
+        <ScrollView style={{ maxHeight: 300 }}>
+          {transactions.slice(0, 5).map((item, index) => (
+            <TouchableOpacity
+              key={index}
+              style={[
+              styles.movementItem,
+              selectedIndex === index ? { 
+                backgroundColor: `${theme.palette.secondary.main}80`,
+                borderRadius: 10,
+                padding: 5,
+                zIndex: 10,
+                elevation: 10,
+               } : {}, 
+              ]}
+              onLongPress={() => {
+              if (item.transactionType === 'PAYMENT') {
+                setSelectedIndex(selectedIndex === index ? null : index); 
+              }
+              }}
+            >
+              {item.transactionType === 'PAYMENT' ? (
+                <MaterialCommunityIcons name="cash-fast" size={24} color="green" />
+                ) : (
+                <MaterialCommunityIcons name="cash-refund" size={24} color="red" />
+                )}
               {
-                item.transactionType === 'PAYMENT' ?
-                  <MaterialCommunityIcons name="cash-fast" size={24} color="green" />
-                  :
-                  <MaterialCommunityIcons name="cash-refund" size={24} color="red" />
+                item.CardOrg === 'Visa' ? (<Image source={require('../assets/cards/visa.png')} style={styles.cardImage} />) : 
+                item.CardOrg === 'MasterCard' ? (<Image source={require('../assets/cards/master.png')} style={styles.cardImage} />) :
+                item.CardOrg === 'AmericanExpress' ? (<Image source={require('../assets/cards/amex.png')} style={styles.cardImage} />) : 
+                (<Image source={require('../assets/cards/generic.png')} style={styles.cardImage} />)
+
               }
               <Text style={styles.movementAmount}>{item.amount} $</Text>
               <Text style={styles.movementDate}>{parseDate(item.transactionDate)}</Text>
-            </View>
+            </TouchableOpacity>
           ))}
         </ScrollView>
       </View>
@@ -96,6 +111,12 @@ const HomeScreen: React.FC  = () => {
       <TouchableOpacity style={styles.paymentButton} onPress={() => {navigator.navigate('Payment')}}>
         <Text style={styles.paymentButtonText}>Make Payment</Text>
       </TouchableOpacity>
+
+      {
+        selectedIndex !== null && (
+          <View style={styles.blurOverlay} />
+        )
+      }
     </View>
   );
 };
@@ -104,6 +125,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.palette.background.light,
+  },
+  blurOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', 
+    zIndex: 5,
+    elevation: 5,
   },
   userName: {
     fontSize: 16,
@@ -190,6 +221,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginLeft: 10,
   },
+  cardImage: {
+    width: 32, 
+    height: 20, 
+    borderRadius: 5
+  }
 });
 
 export default HomeScreen;
