@@ -15,6 +15,9 @@ import { PaymentStackParamList } from '../../types/navigationTypes';
 import theme from '../../utils/theme';
 import { defaultStyles } from '../styles';
 
+// Types
+import { CreditCard } from '../../types/interfaces';
+
 // Initialize NFC Manager
 NfcManager.start();
 
@@ -25,19 +28,9 @@ interface CardReaderScreenProps {
 type CardReaderScreenNavigationProp = NativeStackNavigationProp<PaymentStackParamList,'PaymentReader'>;
   
 const CardReaderScreen: React.FC<CardReaderScreenProps> = ({amount}) => {
-  interface CardInfo {
-    cardNumber: string;
-    cardHolder: string;
-    expiryDate: string;
-  }
-
   const navigator = useNavigation<CardReaderScreenNavigationProp>();
-  const [cardInfo, setCardInfo] = useState<CardInfo | null>(null);
   const [nfcEnabled, setNfcEnabled] = useState(true);
-  const [nfcTag, setNfcTag] = useState<number | null>(null);
-
-
-  const [nfcData, setNfcData] = useState<string | null>(null);
+  const [cardData, setCardData] = useState<CreditCard | null>(null);
   const [isReading, setIsReading] = useState(false);
 
   useEffect(() => {
@@ -53,33 +46,81 @@ const CardReaderScreen: React.FC<CardReaderScreenProps> = ({amount}) => {
     checkNfc();
   }, []);
 
+  interface ParsedResult {
+    PAN?: string;
+    Name?: string;
+    Expiration?: string;
+    CVC?: string;
+    PIN?: string;
+    AID?: string;
+  }
+
+  function parseBytes(byteSequence: Uint8Array): ParsedResult {
+    let data = String.fromCharCode(...new Uint8Array(byteSequence));
+
+    let lines = data.split('\n');
+    
+    let result: ParsedResult = {};
+
+    lines.forEach(line => {
+        if (line.startsWith('PAN:')) {
+            result['PAN'] = line.split(': ')[1];
+        } else if (line.startsWith('Name:')) {
+            result['Name'] = line.split(': ')[1];
+        } else if (line.startsWith('Expiration:')) {
+            result['Expiration'] = line.split(': ')[1];
+        } else if (line.startsWith('CVC:')) {
+            result['CVC'] = line.split(': ')[1];
+        } else if (line.startsWith('PIN:')) {
+            result['PIN'] = line.split(': ')[1];
+        } else if (line.startsWith('AID:')) {
+            result['AID'] = line.split(': ')[1];
+        }
+    });
+
+    return result;
+}
+
   const readNdef = async () => {
     try {
-      setIsReading(true);
-      setNfcData(null);
+        setIsReading(true);
+        setCardData(null);
 
-      await NfcManager.requestTechnology(NfcTech.Ndef);
+        await NfcManager.requestTechnology(NfcTech.Ndef);
 
-      const tag = await NfcManager.getTag();
+        const tag = await NfcManager.getTag();
 
-      if (tag && tag.ndefMessage) {
-        const decoded = Ndef.text.decodePayload(Uint8Array.from(tag.ndefMessage[0].payload));
-        setNfcData(decoded);
-      } else {
-        setNfcData('No NDEF message found.');
-      }
+        if (tag && tag.ndefMessage) {
+            const payload = Uint8Array.from(tag.ndefMessage[0].payload);
+            const decodedJson = parseBytes(payload);
+
+            console.log(decodedJson);
+
+            const cardData: CreditCard = {
+                number: decodedJson['PAN'] || '', 
+                expiry: decodedJson['Expiration'] || '', 
+                cvc: decodedJson['CVC'] || '', 
+                name: decodedJson['Name'] || '', 
+                pin: decodedJson['PIN'] || '', 
+                AID: decodedJson['AID'] || '', 
+            };
+
+            setCardData(cardData); 
+        }
     } catch (error) {
-      console.error('Error reading NFC:', error);
-      Alert.alert('Error', 'Failed to read NFC tag. Please try again.');
+        console.error("Error reading NFC:", error);
+        Alert.alert("Error", "Failed to read NFC tag. Please try again.");
     } finally {
-      setIsReading(false);
-      NfcManager.cancelTechnologyRequest();
+        setIsReading(false);
+        NfcManager.cancelTechnologyRequest();
     }
-  };
+};
 
-  useEffect(() => {
-    navigator.navigate("PaymentPin");
-  }, [nfcData]);
+  // useEffect(() => {
+  //   if (cardData !== undefined && cardData !== null) {      
+  //     navigator.navigate("PaymentPin", { cardData: cardData });
+  //   }
+  // }, [cardData]);
 
   if (!nfcEnabled) {
     return (
@@ -104,7 +145,6 @@ const CardReaderScreen: React.FC<CardReaderScreenProps> = ({amount}) => {
         color={theme.palette.primary.main}
       />
     </TouchableOpacity>
-      {/* Icono NFC y texto */}
       <View style={styles.cardContainer}>
         <MaterialCommunityIcon 
           name="credit-card-wireless-outline" 
@@ -114,10 +154,15 @@ const CardReaderScreen: React.FC<CardReaderScreenProps> = ({amount}) => {
         />
         <Text style={styles.amountText}>{amount.toFixed(2)} $</Text>
         <Text style={styles.subtitle}>Acerque su tarjeta o dispositivo</Text>
-        {nfcData && (
+        {cardData && (
           <View style={styles.resultContainer}>
-            <Text style={styles.resultText}>NFC Data:</Text>
-            <Text style={styles.resultData}>{nfcData}</Text>
+            <Text style={styles.resultText}>Card Data</Text>
+            <Text style={styles.resultData}>Number: {cardData.number}</Text>
+            <Text style={styles.resultData}>Expiry: {cardData.expiry}</Text>
+            <Text style={styles.resultData}>CVC: {cardData.cvc}</Text>
+            <Text style={styles.resultData}>Name: {cardData.name}</Text>
+            <Text style={styles.resultData}>PIN: {cardData.pin}</Text>
+            <Text style={styles.resultData}>AID: {cardData.AID}</Text>
           </View>
         )}
       </View>
