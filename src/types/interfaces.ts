@@ -48,3 +48,18 @@ export interface CreditCard {
     AID: string;
 }
 
+export interface Transaction {
+    id: string;
+    bankAccountId: string;
+    creditCardNumber: string;
+    last4Digits: string;
+    creditCardHolder: string;
+    CardOrg: string;
+    expirationDate: string;
+    cvc: string;
+    amount: string;
+    transactionDate: string;
+    transactionType: string;
+    returned: boolean;
+    bankEntity: string;
+}
