@@ -1,8 +1,11 @@
+import { Transaction } from "./interfaces";
+
 export type RootStackParamList = {
     Main: undefined;
     Profile: undefined ;
     UserAuth: undefined ;
     Payment: undefined ;
+    ShowMore: { transactions: Transaction[] }; 
 };
 
 export type BottomTabParamList = {
