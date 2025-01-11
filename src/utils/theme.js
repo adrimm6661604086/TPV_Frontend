@@ -12,10 +12,12 @@ const theme = {
         background: {
             default: '#101010',
             light: '#F5F5F5',
+            dark: '#303030',
         },
         text: {
             primary: '#000',
             secondary: '#888888',
+            tertiary: '#444444',
             light: '#CCCCCC',
             color: '#196f3d'
         },

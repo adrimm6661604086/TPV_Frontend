@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
     pinText: {
         fontSize: 24,
         fontWeight: "medium",
-        color: theme.palette.primary.main,
+        color: theme.palette.text.secondary,
     },
     pinSubText: {
         fontSize: 16,
@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
     amountText: {
         width: 200,
         textAlign: "center",
-        color: theme.palette.primary.main,
+        color: theme.palette.text.secondary,
         fontSize: 24,
         fontWeight: "medium",
         borderWidth: 1,

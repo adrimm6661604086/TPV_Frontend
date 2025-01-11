@@ -62,7 +62,7 @@ const SettingsScreen = () => {
   };
 
   // Función para cambiar el idioma
-  const handleLanguage = (item: { label: string; value: string; image: any }) => {
+  const handleLanguage = (item: { label: string; value: string; image?: any }) => {
     const saveLanguage = async (language : string) => {
       try {
         await AsyncStorage.setItem('language', language);
