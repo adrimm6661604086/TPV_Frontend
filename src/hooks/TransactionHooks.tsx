@@ -4,20 +4,7 @@ import { BACKEND_URL } from '@env';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-interface Transaction {
-    id: string;
-    bankAccountId: string;
-    creditCardNumber: string;
-    creditCardHolder: string;
-    CardOrg: string;
-    expirationDate: string;
-    cvc: string;
-    amount: string;
-    transactionDate: string;
-    transactionType: string;
-    returned: boolean;
-    bankEntity: string;
-}
+import { Transaction } from '../types/interfaces';
 
 const useTransactions = () => {
     const [transactions, setTransactions] = useState<Transaction[]>([]);
