@@ -36,7 +36,7 @@ const usePayment = () => {
                 throw new Error('No se encontró el ID del usuario.');
             }
 
-            const res = await axios.post(`${BACKEND_URL}/api/transaction/payment`, {
+            const response = await axios.post(`${BACKEND_URL}/api/transaction/payment`, {
                 userId: userId,
                 creditCardNumber: creditCard.number,
                 creditCardHolder: creditCard.name,
@@ -48,11 +48,18 @@ const usePayment = () => {
                     'Content-Type': 'application/json',
                 },
             });
-
-            if (res.status === 200) {
-                setResponse({ success: true, message: 'Payment processed successfully', data: res.data });
+            
+            if (response.data.transaction) {
+                setResponse({ 
+                    success: true, 
+                    message: 'Payment processed successfully', 
+                    data: response.data 
+                });
             } else {
-                setResponse({ success: false, message: res.data.message || 'Payment failed' });
+                setResponse({ 
+                    success: false, 
+                    message: response.data.message || 'Payment failed' 
+                });
             }
         } catch (err) {
             setError('An error occurred while processing the payment');
