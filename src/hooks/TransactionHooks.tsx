@@ -20,8 +20,17 @@ const useTransactions = () => {
           if (!userId) {
             throw new Error('No se encontró el ID del usuario.');
           }
-    
-          const response = await axios.get(`${BACKEND_URL}/api/transaction/${userId}`);
+          
+          console.log(`Transactions requesting from ${BACKEND_URL}/api/transaction/${userId}`);
+          const response = await axios.get(`${BACKEND_URL}/api/transaction/${userId}`,
+            {
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            }
+          );
+          
+          console.log(`Transactions received for user ${userId}`);
           setTransactions(response.data.transactions); 
         } catch (error) {
           if (axios.isAxiosError(error) && error.response) {
