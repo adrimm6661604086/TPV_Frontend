@@ -1,9 +1,9 @@
-export const parseDate = (isoDate : string) => {
+export const parseDate = (isoDate: string, type: 'short' | 'long') => {
     const date = new Date(isoDate);
   
     const options: Intl.DateTimeFormatOptions = {
       day: '2-digit',
-      month: 'short', 
+      month: type, 
       year: 'numeric',
     };
   
