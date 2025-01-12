@@ -16,107 +16,116 @@ import Feather from "react-native-vector-icons/Feather";
 import theme from "../../utils/theme";
 
 interface DialpadPinPadProps {
-    dialPadContent: (string | number)[];
-    navigation: any;
+    dialPadContent: (string | number)[]; 
     dialPadSize: number;
     dialPadTextSize: number;
-    cardPin : string;
+    cardPin: string;
     pin: string;
     setPin: React.Dispatch<React.SetStateAction<string>>;
+    setShowAnimation: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
 const DialpadPinPad: React.FC<DialpadPinPadProps> = ({
     dialPadContent,
-    navigation,
     dialPadSize,
     dialPadTextSize,
     cardPin,
     pin,
     setPin,
+    setShowAnimation,
 }) => {
+
     const handlePress = (item: number | string) => {
         if (item === "delete") {
             setPin((prev) => prev.slice(0, -1));
         } else if (item === "confirm") {
             if (pin.length === 4 && pin === cardPin) {
-                Alert.alert("PIN Confirmed", `Your PIN: ${pin}`);
+                setShowAnimation("success");
             } else {
-                Alert.alert("Invalid PIN", "PIN must be 4 digits long.");
+                setShowAnimation("error");
             }
         } else if (typeof item === "number") {
-            // Añadir número al PIN si no excede la longitud máxima
             setPin((prev) => (prev.length < 4 ? prev + item.toString() : prev));
         }
     };
 
+    
+
     return (
-        <FlatList
-            data={dialPadContent}
-            numColumns={3}
-            keyExtractor={(_, index) => index.toString()}
-            renderItem={({ item }) => (
-                <TouchableOpacity
-                    disabled={item === ""}
-                    onPress={() => handlePress(item)}
-                >
-                    <View
-                        style={[
-                            {
-                                backgroundColor:
-                                    item === "delete"
-                                        ? theme.palette.error.main
-                                        : item === "confirm"
-                                        ? theme.palette.success.main
-                                        : theme.palette.text.secondary,
-                                width: dialPadSize,
-                                height: dialPadSize,
-                            },
-                            styles.dialPadContainer,
-                        ]}
+        <View style={styles.container}>
+            <FlatList
+                data={dialPadContent}
+                numColumns={3}
+                keyExtractor={(_, index) => index.toString()}
+                renderItem={({ item }) => (
+                    <TouchableOpacity
+                        disabled={item === ""}
+                        onPress={() => handlePress(item)}
                     >
-                        {item === "delete" ? (
-                            <Feather
-                                name="delete"
-                                size={24}
-                                color={theme.palette.background.light}
-                            />
-                        ) : item === "confirm" ? (
-                            <Feather
-                                name="check"
-                                size={24}
-                                color={theme.palette.background.light}
-                            />
-                        ) : (
-                            <Text
-                                style={[
-                                    { fontSize: dialPadTextSize },
-                                    styles.dialPadText,
-                                ]}
-                            >
-                                {item}
-                            </Text>
-                        )}
-                    </View>
-                </TouchableOpacity>
-            )}
-        />
+                        <View
+                            style={[
+                                {
+                                    backgroundColor:
+                                        item === "delete"
+                                            ? theme.palette.error.main
+                                            : item === "confirm"
+                                            ? theme.palette.success.main
+                                            : theme.palette.text.secondary,
+                                    width: dialPadSize,
+                                    height: dialPadSize,
+                                },
+                                styles.dialPadContainer,
+                            ]}
+                        >
+                            {item === "delete" ? (
+                                <Feather
+                                    name="delete"
+                                    size={24}
+                                    color={theme.palette.background.light}
+                                />
+                            ) : item === "confirm" ? (
+                                <Feather
+                                    name="check"
+                                    size={24}
+                                    color={theme.palette.background.light}
+                                />
+                            ) : (
+                                <Text
+                                    style={[
+                                        { fontSize: dialPadTextSize },
+                                        styles.dialPadText,
+                                    ]}
+                                >
+                                    {item}
+                                </Text>
+                            )}
+                        </View>
+                    </TouchableOpacity>
+                )}
+            />
+        </View>
     );
 };
 
 export default DialpadPinPad;
 
 const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+    },
     dialPadContainer: {
         justifyContent: "center",
         alignItems: "center",
         margin: 10,
         borderRadius: 50,
-        shadowColor: '#000',
+        shadowColor: "#000",
         shadowOpacity: 0.1,
         shadowOffset: { width: 0, height: 2 },
         elevation: 3,
     },
-    dialPadText: {        
+    dialPadText: {
         color: theme.palette.background.light,
     },
-    });
+});
