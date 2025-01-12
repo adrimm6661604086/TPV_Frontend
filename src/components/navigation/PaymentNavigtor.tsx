@@ -13,6 +13,8 @@ import NumberPadScreen from '../../screens/Payment/NumberPadScreen';
 
 // Types
 import { PaymentStackParamList } from '../../types/navigationTypes';
+import HomeScreen from '../../screens/HomeScreen';
+import BottomTabNavigator from './BottomTabNavigator';
 
 const PaymentStack = createNativeStackNavigator<PaymentStackParamList>();
 
@@ -41,20 +43,15 @@ const PaymentNavigator: React.FC = () => {
                 {props => {
                         const { route } = props;
                         const cardData = route.params?.cardData;
-                        return <PINScreen {...props} cardData={cardData}/>;
+                        const amount = route.params?.amount;
+                        return <PINScreen {...props} cardData={cardData} amount={amount}/>;
                     }}   
             </PaymentStack.Screen>
-            {/* <PaymentStack.Screen 
-                name="PaymentConfirmed" 
-                component={PINScreen} 
+            <PaymentStack.Screen
+                name="PaymentReturn"
+                component={BottomTabNavigator}
                 options={{ headerShown: false }}
-            />
-            <PaymentStack.Screen 
-                name="PaymentRefused" 
-                component={PINScreen} 
-                options={{ headerShown: false }}
-            />                         */}
-
+            />            
         </PaymentStack.Navigator>
     )
 };
