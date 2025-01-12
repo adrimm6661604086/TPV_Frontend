@@ -1,13 +1,13 @@
 // React
 import React, {useState, useEffect} from 'react';
-import { View, Text, ActivityIndicator, StyleSheet, TouchableOpacity, ScrollView, Image } from 'react-native';
+import { View, Text, ActivityIndicator, StyleSheet, TouchableOpacity, ScrollView, Image, Alert, Modal } from 'react-native';
 
 // Libraries
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../types/navigationTypes'; 
+import { PaymentStackParamList, RootStackParamList } from '../types/navigationTypes'; 
 
 // Hooks
 import useTransactions from '../hooks/TransactionHooks';
@@ -15,15 +15,18 @@ import useTransactions from '../hooks/TransactionHooks';
 // Utils
 import theme from '../utils/theme';
 import { parseDate } from '../utils/index';
+import { Transaction } from '../types/interfaces';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Main'>;
+type ReturnScreenNavigationProp = NativeStackNavigationProp<PaymentStackParamList, 'PaymentReturn'>;
 
 const HomeScreen: React.FC  = () => {  
-  const navigator = useNavigation<HomeScreenNavigationProp>();
+  const navigator = useNavigation<HomeScreenNavigationProp | ReturnScreenNavigationProp>();
 
   const [LastWeekBalance, setLastWeekBalance] = useState(0);
   const [TodayBalance, setTodayBalance] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);  
+  const [showMenu, setShowMenu] = useState(false);
   
   const { transactions, loading, error, getBalanceOfLastWeek, getBalanceOfToday, fetchTransactions } = useTransactions();
 
@@ -31,6 +34,23 @@ const HomeScreen: React.FC  = () => {
     setLastWeekBalance(getBalanceOfLastWeek());
     setTodayBalance(getBalanceOfToday());
   }, [transactions]);
+
+  const handleReturn = (transaction : Transaction) => {
+    Alert.alert(
+      'Process Return',
+      `Do you want to process a return for ${transaction.amount} $?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Confirm',
+          onPress: () => {
+            console.log('Return processed for:', transaction);
+            setShowMenu(false);
+          },
+        },
+      ]
+    );
+  };
 
   if (loading) {
     return (
@@ -55,16 +75,20 @@ const HomeScreen: React.FC  = () => {
     <View style={styles.container}>
       
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>Last week Balance</Text>
+        <TouchableOpacity onPress={() => {fetchTransactions()}}>
+          <Text style={styles.cardTitle}>Last week balance</Text>
+        </TouchableOpacity>
         <Text style={styles.balanceAmount}>{LastWeekBalance} $</Text>
         <Text style={styles.balanceChange}>({TodayBalance} $)</Text>
       </View>
 
       <View style={styles.card}>
         <View style={styles.movementsHeader}>
-          <Text style={styles.cardTitle}>Last movements</Text>
+          <TouchableOpacity onPress={fetchTransactions}>
+            <Text style={styles.cardTitle}>Last movements</Text>
+          </TouchableOpacity>
           <TouchableOpacity
-            onPress={() => {navigator.navigate('ShowMore', {transactions})}}
+            onPress={() => {(navigator as HomeScreenNavigationProp).navigate('ShowMore', {transactions})}}
           >
             <Text style={styles.showMore}>Show more ...</Text>
           </TouchableOpacity>
@@ -77,16 +101,14 @@ const HomeScreen: React.FC  = () => {
               styles.movementItem,
               selectedIndex === index ? { 
                 backgroundColor: `${theme.palette.secondary.main}80`,
-                borderRadius: 10,
-                padding: 5,
-                zIndex: 10,
-                elevation: 10,
+                borderRadius: 10,                
                } : {}, 
               ]}
               onLongPress={() => {
-              if (item.transactionType === 'PAYMENT') {
-                setSelectedIndex(selectedIndex === index ? null : index); 
-              }
+                if (item.transactionType === 'PAYMENT') {
+                  setSelectedIndex(index);
+                  setShowMenu(true);
+                }
               }}
             >
               {item.transactionType === 'PAYMENT' ? (
@@ -102,21 +124,48 @@ const HomeScreen: React.FC  = () => {
 
               }
               <Text style={styles.movementAmount}>{item.amount} $</Text>
-              <Text style={styles.movementDate}>{parseDate(item.transactionDate)}</Text>
+              <Text style={styles.movementDate}>{parseDate(item.transactionDate, 'short')}</Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
       </View>
 
-      <TouchableOpacity style={styles.paymentButton} onPress={() => {navigator.navigate('Payment')}}>
+      <TouchableOpacity style={styles.paymentButton} onPress={() => {(navigator as HomeScreenNavigationProp).navigate('Payment')}}>
         <Text style={styles.paymentButtonText}>Make Payment</Text>
       </TouchableOpacity>
 
-      {
-        selectedIndex !== null && (
-          <View style={styles.blurOverlay} />
-        )
-      }
+      <Modal
+        transparent={true}
+        visible={showMenu}
+        animationType="slide"
+        onRequestClose={() => setShowMenu(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.menu}>
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => {
+                if (selectedIndex !== null) {
+                  handleReturn(transactions[selectedIndex]);
+                }
+              }}
+            >
+              <MaterialCommunityIcons name="cash-refund" size={24} color="green" />
+              <Text style={styles.menuText}>Process Return</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => {
+                setSelectedIndex(null);
+                setShowMenu(false);
+              }}
+            >
+              <MaterialCommunityIcons name="close-circle-outline" size={24} color="red" />
+              <Text style={styles.menuText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -178,7 +227,7 @@ const styles = StyleSheet.create({
   movementItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginVertical: 5,
+    padding: 5,
   },
   movementAmount: {
     fontSize: 16,
@@ -225,7 +274,27 @@ const styles = StyleSheet.create({
     width: 32, 
     height: 20, 
     borderRadius: 5
-  }
+  }, 
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  menu: {
+    backgroundColor: '#FFF',
+    padding: 20,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+  },
+  menuText: {
+    fontSize: 16,
+    marginLeft: 10,
+  },
 });
 
 export default HomeScreen;
