@@ -94,7 +94,7 @@ const CardReaderScreen: React.FC<CardReaderScreenProps> = ({amount}) => {
             const payload = Uint8Array.from(tag.ndefMessage[0].payload);
             const decodedJson = parseBytes(payload);
 
-            console.log(decodedJson);
+            // console.log(decodedJson);
 
             const cardData: CreditCard = {
                 number: decodedJson['PAN'] || '', 
@@ -116,11 +116,11 @@ const CardReaderScreen: React.FC<CardReaderScreenProps> = ({amount}) => {
     }
 };
 
-  // useEffect(() => {
-  //   if (cardData !== undefined && cardData !== null) {      
-  //     navigator.navigate("PaymentPin", { cardData: cardData });
-  //   }
-  // }, [cardData]);
+  useEffect(() => {
+    if (cardData !== undefined && cardData !== null) {      
+      navigator.navigate("PaymentPin", { cardData: cardData, amount: amount });
+    }
+  }, [cardData]);
 
   if (!nfcEnabled) {
     return (
