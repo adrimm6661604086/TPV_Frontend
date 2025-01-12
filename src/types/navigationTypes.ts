@@ -19,7 +19,8 @@ import { CreditCard } from "./interfaces";
 export type PaymentStackParamList = {
     PaymentSetter: undefined;
     PaymentReader: { amount: number };
-    PaymentPin: { cardData: CreditCard };
+    PaymentPin: { cardData: CreditCard, amount: number };
     PaymentConfirmed: undefined;
     PaymentRefused: undefined;
+    PaymentReturn: undefined;
 };
