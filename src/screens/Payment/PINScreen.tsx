@@ -12,10 +12,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { PaymentStackParamList, RootStackParamList } from '../../types/navigationTypes';
 
 // Components
-import DialpadPinPad from '../../components/payment/DialpadPinPad';
-
-// Hooks
-import usePayment from '../../hooks/PaymentHooks';
+import PinPad from '../../components/payment/PinPad';
 
 // Utils
 import theme from '../../utils/theme';
@@ -38,114 +35,50 @@ interface PINScreenProps {
 }
 
 const PINScreen: React.FC<PINScreenProps> = ({ cardData, amount }) => {
-  const navigator = useNavigation<NavigationProp<RootStackParamList>>();
+  const navigator = useNavigation<PinScreenNavigationProp>();
   const [pin, setPin] = useState<string>('');
-  const [verification, setVerification] = useState<'idle' | 'processing' | 'success' | 'error'>('idle');
-  const paymentHook = usePayment();
-
-  const handlePayment = async () => {
-    try {
-      setVerification('processing');
-      await paymentHook.processPayment(cardData, amount);
-      
-      if (paymentHook.response?.success) {
-        setVerification('success');
-        console.log('Payment successful');
-      } else if (paymentHook.response?.success!) {
-        setVerification('error');
-        console.error('Payment failed:', paymentHook.response?.message || paymentHook.error);
-      }
-    } catch (error) {
-      setVerification('error');
-      console.error('Payment failed:', error);
-    }
-  };
-
+  const [check, setCheck] = useState<boolean>(false);
   
   useEffect(() => {
-    if (verification === 'success') {
-      const timer = setTimeout(() => {
-        navigator.reset({
-          index: 0,
-          routes: [{ name: 'Main' }],
-        });
-      }, 3000); 
-      return () => clearTimeout(timer);
-    } else if (verification === 'error') {
-      const timer = setTimeout(() => {
-        setVerification('idle'); // Reset state after showing error animation
-      }, 3000);
-      return () => clearTimeout(timer);
+    if (check) {
+      navigator.navigate('PaymentVerification', { 
+        creditCard: cardData, 
+        amount: Number(amount),
+        transactionId: null,
+      });
     }
-  }, [verification]);
+  }, [check]);
 
   return (
     <SafeAreaView style={styles.container}>
-      {verification === 'processing' ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={theme.palette.primary.main} />
-          <Text style={styles.pinText}>Processing Payment...</Text>
-        </View>
-      ) : verification === 'success' || verification === 'error' ? (
-        <>
-          <LottieView
-            source={
-              verification === 'success'
-                ? require('../../assets/animations/success.json')
-                : require('../../assets/animations/error.json')
+      <TouchableOpacity
+        onPress={() => navigator.goBack()}
+        style={defaultStyles.arrowBack}
+      >
+        <Ionicons name="arrow-back" size={32} color={theme.palette.primary.main} />
+      </TouchableOpacity>
+      <View style={styles.textContainer}>
+        <Text style={styles.pinText}>Enter PIN</Text>
+        <Text style={styles.pinSubText}>Please enter your 4-digit PIN</Text>
+        <Text style={styles.pinDisplay}>
+          {'●'.repeat(pin.length).padEnd(4, '○')}
+        </Text>
+        <PinPad
+          dialPadContent={pinPadContent}
+          dialPadSize={pinPadSize}
+          dialPadTextSize={pinPadTextSize}
+          cardPin={cardData.pin}
+          pin={pin}
+          setPin={setPin}
+          handleOnConfirm={(status) => {
+            if (status === 'success') {
+              setCheck(true);
+            } else {
+              setCheck(false);
             }
-            autoPlay
-            loop={false}
-            style={styles.animation}
-          />
-          <Text
-            style={[
-              styles.pinText,
-              {
-                color:
-                  verification === 'success'
-                    ? theme.palette.success.main
-                    : theme.palette.error.main,
-              },
-            ]}
-          >
-            {verification === 'success' ? 
-              ( paymentHook.response?.success ? 'Payment Successful' : 'Payment Failed') 
-              : 'Pin Incorrect'}
-          </Text>
-        </>
-      ) : (
-        <>
-          <TouchableOpacity
-            onPress={() => navigator.goBack()}
-            style={defaultStyles.arrowBack}
-          >
-            <Ionicons name="arrow-back" size={32} color={theme.palette.primary.main} />
-          </TouchableOpacity>
-          <View style={styles.textContainer}>
-            <Text style={styles.pinText}>Enter PIN</Text>
-            <Text style={styles.pinSubText}>Please enter your 4-digit PIN</Text>
-            <Text style={styles.pinDisplay}>
-              {'●'.repeat(pin.length).padEnd(4, '○')}
-            </Text>
-            <DialpadPinPad
-              dialPadContent={pinPadContent}
-              dialPadSize={pinPadSize}
-              dialPadTextSize={pinPadTextSize}
-              cardPin={cardData.pin}
-              pin={pin}
-              setPin={setPin}
-              setShowAnimation={(status) => {
-                if (status === 'success') {
-                  handlePayment();
-                } else {
-                  setVerification('error'); 
-                }
-              }}
-            />
-          </View>
-        </>  
-      )}
+          }}
+        />
+      </View>
     </SafeAreaView>
   );
 };

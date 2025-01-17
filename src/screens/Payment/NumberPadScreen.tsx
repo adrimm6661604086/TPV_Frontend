@@ -11,7 +11,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList, PaymentStackParamList } from '../../types/navigationTypes';
 
 // Components
-import DialpadKeypad from "../../components/payment/DialpadKeypad";
+import NumberPad from "../../components/payment/NumberPad";
 
 // Utiles
 import theme from '../../utils/theme';
@@ -42,7 +42,7 @@ const NumberPadScreen: React.FC = () => {
         <Text style={styles.pinText}>Select Amount</Text>
         <Text style={styles.pinSubText}>Please enter the amount you want to pay</Text>
         <Text style={styles.amountText}>{amount.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} $</Text>
-        <DialpadKeypad
+        <NumberPad
           dialPadContent={dialPadContent}
           dialPadSize={dialPadSize}
           navigation={navigator}
