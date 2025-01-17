@@ -63,3 +63,12 @@ export interface Transaction {
     returned: boolean;
     bankEntity: string;
 }
+
+export interface ParsedBytes {
+    PAN?: string;
+    Name?: string;
+    Expiration?: string;
+    CVC?: string;
+    PIN?: string;
+    AID?: string;
+  }
