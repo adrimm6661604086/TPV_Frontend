@@ -4,7 +4,7 @@ export type RootStackParamList = {
     Main: undefined;
     Profile: undefined ;
     UserAuth: undefined ;
-    Payment: undefined ;
+    Payment: undefined | { screen: keyof PaymentStackParamList; params: PaymentStackParamList[keyof PaymentStackParamList] };
     ShowMore: { transactions: Transaction[] }; 
 };
 
@@ -18,9 +18,21 @@ import { CreditCard } from "./interfaces";
 
 export type PaymentStackParamList = {
     PaymentSetter: undefined;
-    PaymentReader: { amount: number };
-    PaymentPin: { cardData: CreditCard, amount: number };
-    PaymentConfirmed: undefined;
-    PaymentRefused: undefined;
-    PaymentReturn: undefined;
+    PaymentReader: { 
+        amount: number
+    };
+    ReturnReader: { 
+        transactionId: string,
+        amount: number
+    };
+    PaymentPin: { 
+        cardData: CreditCard, 
+        amount: number, 
+    };
+    PaymentVerification: {
+        creditCard: CreditCard,
+        amount: number
+        transactionId: string | null,  
+    };
+    MainScreen: undefined;
 };

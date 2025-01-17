@@ -2,18 +2,16 @@
 import React from 'react';
 
 // Libraries
-import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 // Screens
-import PaymentScreen from '../../screens/Payment/PaymentScreen';
 import CardReaderScreen from '../../screens/Payment/CardReaderScreen';
 import PINScreen from '../../screens/Payment/PINScreen';
 import NumberPadScreen from '../../screens/Payment/NumberPadScreen';
+import PaymentVerification from '../../screens/Payment/PaymentVerification';
 
 // Types
 import { PaymentStackParamList } from '../../types/navigationTypes';
-import HomeScreen from '../../screens/HomeScreen';
 import BottomTabNavigator from './BottomTabNavigator';
 
 const PaymentStack = createNativeStackNavigator<PaymentStackParamList>();
@@ -33,7 +31,28 @@ const PaymentNavigator: React.FC = () => {
                 {props => {
                     const { route } = props;
                     const amount = route.params?.amount;
-                    return <CardReaderScreen {...props} amount={amount} />;
+                    return <CardReaderScreen 
+                        {...props}  
+                        transactionId={null}                      
+                        amount={amount} 
+                        actionType="payment" 
+                    />;
+                }}
+            </PaymentStack.Screen>
+            <PaymentStack.Screen
+                name="ReturnReader"
+                options={{ headerShown: false }}
+            >
+                {props => {
+                    const { route } = props;
+                    const amount = route.params?.amount;
+                    const transactionId = route.params?.transactionId;
+                    return <CardReaderScreen 
+                        {...props} 
+                        transactionId={transactionId}
+                        amount={amount} 
+                        actionType="return" 
+                    />;
                 }}
             </PaymentStack.Screen>
             <PaymentStack.Screen 
@@ -46,12 +65,29 @@ const PaymentNavigator: React.FC = () => {
                         const amount = route.params?.amount;
                         return <PINScreen {...props} cardData={cardData} amount={amount}/>;
                     }}   
-            </PaymentStack.Screen>
+            </PaymentStack.Screen>        
             <PaymentStack.Screen
-                name="PaymentReturn"
-                component={BottomTabNavigator}
+                name="PaymentVerification"
                 options={{ headerShown: false }}
-            />            
+            >         
+                {props => {
+                    const { route } = props;                    
+                    const creditCard = route.params?.creditCard;
+                    const amount = route.params?.amount;
+                    const transactionId = route.params?.transactionId;
+                    return <PaymentVerification {...props} 
+                        creditCard={creditCard}  
+                        amount={amount} 
+                        transactionId={transactionId}
+                        actionType={transactionId ? 'return' : 'payment'}
+                    />;
+                }}
+            </PaymentStack.Screen>
+            <PaymentStack.Screen 
+                name="MainScreen" 
+                component={BottomTabNavigator} 
+                options={{ headerShown: false }}
+            /> 
         </PaymentStack.Navigator>
     )
 };
