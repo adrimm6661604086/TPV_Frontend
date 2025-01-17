@@ -5,7 +5,7 @@ import { View, Text, ActivityIndicator, StyleSheet, TouchableOpacity, ScrollView
 // Libraries
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, CompositeNavigationProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { PaymentStackParamList, RootStackParamList } from '../types/navigationTypes'; 
 
@@ -14,14 +14,19 @@ import useTransactions from '../hooks/TransactionHooks';
 
 // Utils
 import theme from '../utils/theme';
-import { parseDate } from '../utils/index';
 import { Transaction } from '../types/interfaces';
+import TransactionList from '../components/TransactionList';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Main'>;
-type ReturnScreenNavigationProp = NativeStackNavigationProp<PaymentStackParamList, 'PaymentReturn'>;
+type MainScreenNavigationProp = NativeStackNavigationProp<PaymentStackParamList, 'MainScreen'>;
+
+type CombinedNavigationProp = CompositeNavigationProp<
+  HomeScreenNavigationProp  ,
+  MainScreenNavigationProp
+>;
 
 const HomeScreen: React.FC  = () => {  
-  const navigator = useNavigation<HomeScreenNavigationProp | ReturnScreenNavigationProp>();
+  const navigator = useNavigation<CombinedNavigationProp>();
 
   const [LastWeekBalance, setLastWeekBalance] = useState(0);
   const [TodayBalance, setTodayBalance] = useState(0);
@@ -38,14 +43,24 @@ const HomeScreen: React.FC  = () => {
   const handleReturn = (transaction : Transaction) => {
     Alert.alert(
       'Process Return',
-      `Do you want to process a return for ${transaction.amount} $?`,
+      `Do you want to process a return for ${transaction.amount} $ to the card **** ${transaction.last4Digits}?`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Confirm',
           onPress: () => {
-            console.log('Return processed for:', transaction);
             setShowMenu(false);
+            setSelectedIndex(null);
+            navigator.navigate(
+              'Payment', 
+              { 
+                screen: 'ReturnReader',
+                params: { 
+                  transactionId: transaction.id,
+                  amount: Number(transaction.amount),
+                }            
+              }
+            );
           },
         },
       ]
@@ -78,59 +93,39 @@ const HomeScreen: React.FC  = () => {
         <TouchableOpacity onPress={() => {fetchTransactions()}}>
           <Text style={styles.cardTitle}>Last week balance</Text>
         </TouchableOpacity>
-        <Text style={styles.balanceAmount}>{LastWeekBalance} $</Text>
-        <Text style={styles.balanceChange}>({TodayBalance} $)</Text>
+        <View style={styles.balanceContainer}>
+          <Text style={styles.balanceAmount}>{LastWeekBalance.toFixed(2)} $</Text>
+          <Text style={{fontSize: 18, color: TodayBalance < 0.0 ? theme.palette.error.main : theme.palette.success.main}}>
+              ({TodayBalance.toFixed(2)}) $
+          </Text>
+        </View>
       </View>
 
       <View style={styles.card}>
-        <View style={styles.movementsHeader}>
-          <TouchableOpacity onPress={fetchTransactions}>
-            <Text style={styles.cardTitle}>Last movements</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {(navigator as HomeScreenNavigationProp).navigate('ShowMore', {transactions})}}
-          >
-            <Text style={styles.showMore}>Show more ...</Text>
-          </TouchableOpacity>
-        </View>
-        <ScrollView style={{ maxHeight: 300 }}>
-          {transactions.slice(0, 5).map((item, index) => (
-            <TouchableOpacity
-              key={index}
-              style={[
-              styles.movementItem,
-              selectedIndex === index ? { 
-                backgroundColor: `${theme.palette.secondary.main}80`,
-                borderRadius: 10,                
-               } : {}, 
-              ]}
-              onLongPress={() => {
-                if (item.transactionType === 'PAYMENT') {
-                  setSelectedIndex(index);
-                  setShowMenu(true);
-                }
-              }}
-            >
-              {item.transactionType === 'PAYMENT' ? (
-                <MaterialCommunityIcons name="cash-fast" size={24} color="green" />
-                ) : (
-                <MaterialCommunityIcons name="cash-refund" size={24} color="red" />
-                )}
-              {
-                item.CardOrg === 'Visa' ? (<Image source={require('../assets/cards/visa.png')} style={styles.cardImage} />) : 
-                item.CardOrg === 'MasterCard' ? (<Image source={require('../assets/cards/master.png')} style={styles.cardImage} />) :
-                item.CardOrg === 'AmericanExpress' ? (<Image source={require('../assets/cards/amex.png')} style={styles.cardImage} />) : 
-                (<Image source={require('../assets/cards/generic.png')} style={styles.cardImage} />)
-
-              }
-              <Text style={styles.movementAmount}>{item.amount} $</Text>
-              <Text style={styles.movementDate}>{parseDate(item.transactionDate, 'short')}</Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+        <TransactionList
+          transactions={transactions}
+          maxHeight={280}
+          onFetchTransactions={fetchTransactions}
+          onShowMore={(transactions) => {
+            (navigator as HomeScreenNavigationProp).navigate('ShowMore', { transactions });
+          }}
+          onLongPressTransaction={(transaction) => {
+            setSelectedIndex(transactions.indexOf(transaction));
+            setShowMenu(true);
+          }}
+        />
       </View>
 
-      <TouchableOpacity style={styles.paymentButton} onPress={() => {(navigator as HomeScreenNavigationProp).navigate('Payment')}}>
+      <TouchableOpacity 
+        style={styles.paymentButton} 
+        onPress={() => {
+          navigator.navigate('Payment', 
+            { 
+              screen: 'PaymentSetter',
+              params: undefined
+            }
+          );
+        }}>
         <Text style={styles.paymentButtonText}>Make Payment</Text>
       </TouchableOpacity>
 
@@ -138,7 +133,10 @@ const HomeScreen: React.FC  = () => {
         transparent={true}
         visible={showMenu}
         animationType="slide"
-        onRequestClose={() => setShowMenu(false)}
+        onRequestClose={() => {
+          setSelectedIndex(null);
+          setShowMenu(false); 
+        }}
       >
         <View style={styles.modalContainer}>
           <View style={styles.menu}>
@@ -204,17 +202,19 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   cardTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
     marginBottom: 10,
+  },
+  balanceContainer: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   balanceAmount: {
     fontSize: 24,
     fontWeight: 'bold',
-  },
-  balanceChange: {
-    fontSize: 18,
-    color: 'green',
+    paddingRight: 10,
   },
   movementsHeader: {
     flexDirection: 'row',
@@ -242,7 +242,6 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',
-    marginTop: 10,
   },
   paymentButtonText: {
     color: '#FFFFFF',
