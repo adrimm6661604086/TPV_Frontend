@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Image, Modal } from 'react-native';
+import { View, Text, Alert, StyleSheet, TouchableOpacity, Modal } from 'react-native';
 
 // Navigation
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -7,8 +7,10 @@ import { useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '../../types/navigationTypes';
 
 // Libraries
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+
+// Components
+import TransactionList from '../../components/TransactionList';
 
 // Utils
 import { parseDate } from '../../utils/index';
@@ -16,7 +18,7 @@ import theme from '../../utils/theme';
 import { Transaction } from '../../types/interfaces';
 import { defaultStyles } from '../styles';
 
-// Helper to group transactions by month and year
+
 const groupTransactionsByMonth = (transactions: Transaction[]) => {
   const grouped: { [key: string]: Transaction[] } = {};
 
@@ -47,9 +49,30 @@ const MoreInfoScreen: React.FC<MoreInfoScreenProps> = ({ transactions }) => {
 
   const groupedTransactions = groupTransactionsByMonth(transactions);
 
-  const handleReturn = (transaction: Transaction) => {
-    console.log('Return processed for:', transaction);
-    setSelectedTransaction(null);
+  const handleReturn = (transaction : Transaction) => {
+    Alert.alert(
+      'Process Return',
+      `Do you want to process a return for ${transaction.amount} $ to the card **** ${transaction.last4Digits}?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Confirm',
+          onPress: () => {
+            setSelectedTransaction(null);
+            navigator.navigate(
+              'Payment', 
+              { 
+                screen: 'ReturnReader',
+                params: { 
+                  transactionId: transaction.id,
+                  amount: Number(transaction.amount),
+                }            
+              }
+            );
+          },
+        },
+      ],
+    );    
   };
 
   return (
@@ -60,58 +83,21 @@ const MoreInfoScreen: React.FC<MoreInfoScreenProps> = ({ transactions }) => {
       >
         <Ionicons name="arrow-back" size={32} color={theme.palette.primary.main} />
       </TouchableOpacity>
+      {/* <TouchableOpacity
+        onPress={() => fetchTransactions()}
+        style={{...defaultStyles.refreshBtn , elevation: 10 }}
+      >
+        <Ionicons name="refresh" size={32} color={theme.palette.primary.main} />
+      </TouchableOpacity> */}
 
-      <ScrollView contentContainerStyle={styles.container} style={styles.scrollView}>
-        {groupedTransactions.map((group, groupIndex) => (
-          <View key={groupIndex} style={styles.groupContainer}>
-            <Text style={styles.groupHeader}>
-              {group.monthYear}
-            </Text>
-            {group.transactions.map((item, index) => (
-              <TouchableOpacity
-                key={`${groupIndex}-${index}`}
-                style={[
-                  styles.movementItem,
-                  selectedTransaction === item
-                    ? {
-                        backgroundColor: `${theme.palette.secondary.main}80`,
-                        borderRadius: 10,
-                      }
-                    : {},
-                ]}
-                onLongPress={() => setSelectedTransaction(item)}
-              >
-                <View style={styles.iconContainer}>
-                  {item.transactionType === 'PAYMENT' ? (
-                    <MaterialCommunityIcons name="cash-fast" size={24} color="green" />
-                  ) : (
-                    <MaterialCommunityIcons name="cash-refund" size={24} color="red" />
-                  )}
-                </View>
-                <View style={styles.cardImageContainer}>
-                  {item.CardOrg === 'Visa' ? (
-                    <Image source={require('../../assets/cards/visa.png')} style={styles.cardImage} />
-                  ) : item.CardOrg === 'MasterCard' ? (
-                    <Image source={require('../../assets/cards/master.png')} style={styles.cardImage} />
-                  ) : item.CardOrg === 'AmericanExpress' ? (
-                    <Image source={require('../../assets/cards/amex.png')} style={styles.cardImage} />
-                  ) : (
-                    <Image source={require('../../assets/cards/generic.png')} style={styles.cardImage} />
-                  )}
-                </View>
-                <View style={styles.detailsContainer}>
-                  <Text style={styles.movementAmount}>{item.amount} $</Text>
-                  <Text style={styles.movementDate}>{parseDate(item.transactionDate, 'short')}</Text>
-                  <Text style={styles.cardInfo}>
-                    {item.CardOrg} - **** {item.last4Digits}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </View>
-        ))}
-      </ScrollView>
 
+      <View style={styles.transactoonListContainer}>
+        <TransactionList
+          transactions={transactions}
+          groupByMonth
+          onLongPressTransaction={(transaction) => setSelectedTransaction(transaction)}
+        />
+      </View>
       {selectedTransaction && (
         <Modal
           transparent
@@ -163,6 +149,12 @@ const styles = StyleSheet.create({
   container: {
     justifyContent: 'center',
     marginBottom: 70,
+  },
+  transactoonListContainer: {
+    flex: 1,
+    marginHorizontal: 10,
+    marginTop: 60,
+    marginBottom: 20,
   },
   scrollView: {
     maxHeight: '90%',
