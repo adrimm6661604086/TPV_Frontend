@@ -1,10 +1,26 @@
+// React
 import { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
-import { BACKEND_URL } from '@env';
 
+// Libraries
+import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+// Utils
+import { BACKEND_URL } from '@env';
 import { Transaction } from '../types/interfaces';
+
+axios.interceptors.request.use((request) => {
+  console.log('Starting Request', request);
+  return request;
+});
+
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.error('Response Error', error);
+    return Promise.reject(error);
+  }
+);
 
 const useTransactions = () => {
     const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -21,7 +37,6 @@ const useTransactions = () => {
             throw new Error('No se encontró el ID del usuario.');
           }
           
-          console.log(`Transactions requesting from ${BACKEND_URL}/api/transaction/${userId}`);
           const response = await axios.get(`${BACKEND_URL}/api/transaction/${userId}`,
             {
               headers: {
