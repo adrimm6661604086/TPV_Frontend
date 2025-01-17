@@ -10,6 +10,20 @@ import { BACKEND_URL } from '@env';
 // Interface
 import { User } from '../types/interfaces';
 
+
+axios.interceptors.request.use((request) => {
+  console.log('Starting Request', request);
+  return request;
+});
+
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.error('Response Error', error);
+    return Promise.reject(error);
+  }
+);
+
 export const useRegister = (setCurrentComponent: (component: any) => void) => {
   const registerUser = async (formData: any) => {
     const {
