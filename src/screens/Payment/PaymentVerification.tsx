@@ -25,11 +25,12 @@ interface PaymentVerificationProps {
     amount: number;
     transactionId: string | null;
     actionType: 'payment' | 'return';
+    check: boolean;
 }
 
 type VerificationScreenNavigationProp = NativeStackNavigationProp<PaymentStackParamList, 'PaymentVerification'>;
 
-const PaymentVerification: React.FC<PaymentVerificationProps> = ({ creditCard, amount, transactionId, actionType }) => {
+const PaymentVerification: React.FC<PaymentVerificationProps> = ({ creditCard, amount, transactionId, actionType, check }) => {
     const navigator = useNavigation<VerificationScreenNavigationProp>();
     const [verification, setVerification] = useState<'processing' | 'success' | 'error' | null>(null);
     const [isProcessing, setIsProcessing] = useState(false); 
@@ -96,8 +97,8 @@ const PaymentVerification: React.FC<PaymentVerificationProps> = ({ creditCard, a
     useEffect(() => {
       if (verification === 'success' || verification === 'error') {
         const timer = setTimeout(() => {
-          setVerification(null); // Restablecer el estado de verification
-          setIsProcessing(false); // Restablecer el estado de isProcessing
+          setVerification(null); 
+          setIsProcessing(false); 
           navigator.reset({
             index: 0,
             routes: [{ name: 'MainScreen' }],
@@ -118,7 +119,7 @@ const PaymentVerification: React.FC<PaymentVerificationProps> = ({ creditCard, a
             <>
               <LottieView
                 source={
-                  verification === 'success'
+                  verification === 'success' && check 
                     ? require('../../assets/animations/success.json')
                     : require('../../assets/animations/error.json')
                 }
@@ -139,7 +140,7 @@ const PaymentVerification: React.FC<PaymentVerificationProps> = ({ creditCard, a
               >
                 {verification === 'success' ? 
                   ( paymentHook.response?.success ? 'Payment Successful' : 'Payment Failed') 
-                  : 'Pin Incorrect'}
+                  : check ? 'Internal Error' : 'Incorrect PIN'}
               </Text>
             </>
           ) : null
