@@ -15,4 +15,9 @@ export const defaultStyles = StyleSheet.create({
         fontSize: 16,
         color: '#000',
     },
+    refreshBtn: {
+        position: 'absolute',
+        top: 20,
+        right: 20,
+    },
 });
