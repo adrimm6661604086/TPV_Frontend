@@ -75,11 +75,13 @@ const PaymentNavigator: React.FC = () => {
                     const creditCard = route.params?.creditCard;
                     const amount = route.params?.amount;
                     const transactionId = route.params?.transactionId;
+                    const check = route.params?.check;
                     return <PaymentVerification {...props} 
                         creditCard={creditCard}  
                         amount={amount} 
                         transactionId={transactionId}
                         actionType={transactionId ? 'return' : 'payment'}
+                        check={check}
                     />;
                 }}
             </PaymentStack.Screen>
