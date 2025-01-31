@@ -37,14 +37,22 @@ interface PINScreenProps {
 const PINScreen: React.FC<PINScreenProps> = ({ cardData, amount }) => {
   const navigator = useNavigation<PinScreenNavigationProp>();
   const [pin, setPin] = useState<string>('');
-  const [check, setCheck] = useState<boolean>(false);
+  const [check, setCheck] = useState<boolean | null>(null);
   
   useEffect(() => {
-    if (check) {
+    if (check === true) {
       navigator.navigate('PaymentVerification', { 
         creditCard: cardData, 
         amount: Number(amount),
         transactionId: null,
+        check: true,
+      });
+    } else if (check === false) {
+      navigator.navigate('PaymentVerification', {
+        creditCard: cardData,
+        amount: Number(amount),
+        transactionId: null,
+        check: false,
       });
     }
   }, [check]);
