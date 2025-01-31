@@ -33,6 +33,7 @@ export type PaymentStackParamList = {
         creditCard: CreditCard,
         amount: number
         transactionId: string | null,  
+        check: boolean
     };
     MainScreen: undefined;
 };
