@@ -72,3 +72,14 @@ export interface ParsedBytes {
     PIN?: string;
     AID?: string;
   }
+  
+export type FilterType = 'daily' | 'weekly' | 'monthly' | 'annually' | { startDate: string; endDate: string };
+
+export interface StatsData {
+    transactions: number
+    totalAmount: number
+    payments: number
+    returns: number
+    paymentsAmount: number
+    returnsAmount: number
+  }
