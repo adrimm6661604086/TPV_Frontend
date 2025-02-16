@@ -1,61 +1,59 @@
-// React
-import { useState, useCallback } from 'react';
+import { useState, useCallback } from "react"
+import axios from "axios"
+import AsyncStorage from "@react-native-async-storage/async-storage"
 
-// Libraries
-import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+// Constantes
+const BACKEND_URL = "http://192.168.1.103:5000/api"
 
-// Utils
-import { BACKEND_URL } from '@env';
-import { StatsData, FilterType } from '../types/interfaces';
+// Tipos
+import type { StatsData, FilterType, ApiResponse } from "../types/interfaces"
 
-
+// Configuración de interceptores para depuración
 axios.interceptors.request.use((request) => {
-  console.log('Starting Request', request);
-  return request;
-});
+  console.log("Starting Request", request)
+  return request
+})
 
 axios.interceptors.response.use(
   (response) => response,
   (error) => {
-    console.error('Response Error', error);
-    return Promise.reject(error);
-  }
-);
+    console.error("Response Error", error)
+    return Promise.reject(error)
+  },
+)
 
 const useStats = () => {
-    const [stats, setStats] = useState<StatsData | null>(null);
-    const [loading, setLoading] = useState<boolean>(false);
-    const [error, setError] = useState<string | null>(null);
+  const [stats, setStats] = useState<ApiResponse | null>(null)
+  const [loading, setLoading] = useState<boolean>(false)
+  const [error, setError] = useState<string | null>(null)
 
-    const fetchStats = useCallback(async (filter: FilterType) => {
-        setLoading(true);
-        setError(null);
+  const fetchStats = useCallback(async (filter: FilterType) => {
+    setLoading(true)
+    setError(null)
 
-        try {
-            const userId = await AsyncStorage.getItem('userId');
-            if (!userId) {
-                throw new Error('User ID not found');
-            }
+    try {
+      const userId = await AsyncStorage.getItem("userId")
+      if (!userId) {
+        throw new Error("User ID not found")
+      }
 
-            let queryParam = '';
-            if (typeof filter === 'string') {
-                queryParam = `time-filter=${filter}`;
-            } else {
-                queryParam = `startDate=${filter.startDate}&endDate=${filter.endDate}`;
-            }
+      // Construcción del query param en función del tipo de filtro
+      const queryParam =
+        typeof filter === "string" ? `time-filter=${filter}` : `startDate=${filter.startDate}&endDate=${filter.endDate}`
 
-            const response = await axios.get(`${BACKEND_URL}/api/stats/${userId}?${queryParam}`);
+      const response = await axios.get<ApiResponse>(`${BACKEND_URL}/stats/${userId}?${queryParam}`)
 
-            setStats(response.data);
-        } catch (err: any) {
-            setError(err.message || 'Error fetching stats');
-        } finally {
-            setLoading(false);
-        }
-    }, []);
+      setStats(response.data)
+    } catch (err: any) {
+      console.error("Error fetching stats:", err)
+      setError(err.response?.data?.message || err.message || "Error fetching stats")
+    } finally {
+      setLoading(false)
+    }
+  }, [])
 
-    return { stats, loading, error, fetchStats };
-};
+  return { stats, loading, error, fetchStats }
+}
 
-export default useStats;
+export default useStats
+
