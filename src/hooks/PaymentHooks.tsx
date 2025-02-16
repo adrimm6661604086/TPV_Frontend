@@ -6,7 +6,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 
 // Utils
-import { BACKEND_URL } from '@env';
+// import { BACKEND_URL } from '@env';
+const BACKEND_URL = 'http://192.168.1.103:5000';
+
 
 // Interfaces
 import { CreditCard } from '../types/interfaces';
@@ -14,15 +16,15 @@ import { CreditCard } from '../types/interfaces';
 axios.interceptors.request.use((request) => {
     console.log('Starting Request', request);
     return request;
-  });
-  
-  axios.interceptors.response.use(
-    (response) => response,
-    (error) => {
-      console.error('Response Error', error);
-      return Promise.reject(error);
-    }
-  );
+});
+
+axios.interceptors.response.use(
+(response) => response,
+(error) => {
+    console.error('Response Error', error);
+    return Promise.reject(error);
+}
+);
 
 interface PaymentResponse {
     success: boolean;

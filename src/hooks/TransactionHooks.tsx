@@ -6,7 +6,9 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Utils
-import { BACKEND_URL } from '@env';
+// import { BACKEND_URL } from '@env';
+const BACKEND_URL = 'http://192.168.1.103:5000';
+
 import { Transaction } from '../types/interfaces';
 
 axios.interceptors.request.use((request) => {

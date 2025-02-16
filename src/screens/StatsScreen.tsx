@@ -1,133 +1,103 @@
 // React
-import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ActivityIndicator } from 'react-native';
+import type React from "react"
+import { useEffect, useState } from "react"
+import { View, Text, StyleSheet, SafeAreaView, ActivityIndicator, ScrollView, TouchableOpacity, Dimensions } from "react-native"
 
 // Libraries
-import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
+import MaterialIcon from "react-native-vector-icons/MaterialIcons"
 
 // Hooks
-import useStats from '../hooks/StatsHooks';
+import useStats from "../hooks/StatsHooks"
 
 // Utils
-import theme from '../utils/theme';
-import BarChart from '../components/statistics/BarChart';
-import { FilterType, StatsData } from '../types/interfaces';
+import theme from "../utils/theme"
+
+// Components
+import { BarChart } from "../components/statistics/BarChart"
+import { LineChart } from "../components/statistics/LineChart"
+import { SegmentedControl } from "../components/statistics/SegmentControl"
+
+// Types
+import type { FilterType } from "../types/interfaces"
 
 const StatsScreen: React.FC = () => {
-  const [chartData, setChartData] = useState<Record<string, StatsData>>({});
-  const [timeTab, setTimeTab] = useState<FilterType>('weekly');
+  const [timeTab, setTimeTab] = useState<FilterType>("weekly")
+  const [chartTab, setChartTab] = useState<"line" | "bar">("bar")
 
-  const { stats, loading, error, fetchStats } = useStats();
+  const { stats, loading, error, fetchStats } = useStats()
 
   useEffect(() => {
-    fetchStats(timeTab);
-    if (stats) {
-
-      setChartData({ [timeTab as string]: stats });
-    }
-  }, [timeTab]);
+    fetchStats(timeTab)
+  }, [timeTab, fetchStats])
 
   if (loading) {
     return (
       <View style={styles.container}>
         <ActivityIndicator size={32} color={theme.palette.primary.main} />
       </View>
-    );
-  } 
-  else if (error) {
+    )
+  } else if (error) {
     return (
       <View style={styles.container}>
-        <Text style={styles.errorMessage}>Ocurrió un error: {error}</Text>
+        <Text style={styles.errorMessage}>An error occurred: {error}</Text>
         <TouchableOpacity style={styles.reloadButton} onPress={() => fetchStats(timeTab)}>
           <MaterialIcon name="refresh" size={24} color="#FFFFFF" />
           <Text style={styles.reloadButtonText}>Try Again</Text>
         </TouchableOpacity>
       </View>
-    );
+    )
   }
 
+  const chartData = stats?.data?.stats || {}
+
   return (
-    <View style={styles.container}>
-      <View style={styles.subTabs}>
-          {['daily', 'weekly', 'monthly', 'annually'].map((tab) => (
-            <TouchableOpacity
-              key={tab}
-              style={[
-                styles.subTab,
-                timeTab === tab && styles.subTabActive,
-              ]}
-              onPress={() => setTimeTab( tab as FilterType)}
-            >
-              <Text
-                style={[
-                  styles.subTabText,
-                  timeTab === tab && styles.subTabTextActive,
-                ]}
-              >
-                {tab}
-              </Text>
-            </TouchableOpacity>
+    <View style={styles.container} >
+      <SegmentedControl
+        values={["Daily", "Weekly", "Monthly", "Annually"]}
+        selectedIndex={["daily", "weekly", "monthly", "annually"].indexOf(timeTab as string)}
+        onChange={(index) => setTimeTab(["daily", "weekly", "monthly", "annually"][index] as FilterType)}
+      />
+
+      <SegmentedControl
+        values={["Bar Chart", "Line Chart"]}
+        selectedIndex={chartTab === "bar" ? 0 : 1}
+        onChange={(index) => setChartTab(index === 0 ? "bar" : "line")}
+      />
+
+      <SafeAreaView style={styles.card}>
+        {stats &&
+          (chartTab === "bar" ? (
+            <BarChart data={chartData} timeFilter={timeTab} height={200} />
+          ) : (
+            <LineChart data={chartData} timeFilter={timeTab} height={200}/>
           ))}
-        </View> 
-
-        <SafeAreaView style={styles.card}>          
-          <BarChart
-            data={chartData}
-            barColor={theme.palette.primary.main}
-            height={230}
-            width={300}
-            title={`${timeTab} statistics`}
-          />
-
-        </SafeAreaView>
+      </SafeAreaView>
     </View>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#f5f5f5",
     padding: 16,
-  },  
-  subTabs: {
-    flexDirection: 'row',
-    backgroundColor: theme.palette.background.dark,
-    borderRadius: 10,
-    padding: 5,
-  },
-  subTab: {
-    flex: 1,
-    paddingVertical: 8,
-    alignItems: 'center',
-    borderRadius: 8,
-  },
-  subTabActive: {
-    backgroundColor: theme.palette.primary.main,
-    elevation: 2,
-  },
-  subTabText: {
-    fontSize: 14,
-    color: theme.palette.text.light,
-  },
-  subTabTextActive: {
-    fontWeight: '600',
-    color: '#ffffff',
   },
   card: {
-    backgroundColor: '#FFFFFF',
-    marginVertical: 10,
-    padding: 16,
+    height: "82%",
+    backgroundColor: "#FFFFFF",
+    padding: 14,
     borderRadius: 10,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowOffset: { width: 0, height: 2 },
-    elevation: 5,    
+    elevation: 5,
+    marginVertical: 10,
   },
   errorMessage: {
     fontSize: 16,
-    color: 'red',
+    color: "red",
     marginVertical: 20,
-    textAlign: 'center',
+    textAlign: "center",
   },
   reloadButton: {
     flexDirection: 'row',
@@ -144,6 +114,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginLeft: 10,
   },
-});
+})
 
-export default StatsScreen;
+export default StatsScreen
+

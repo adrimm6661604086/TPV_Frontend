@@ -5,7 +5,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Axios
 import axios from 'axios';
-import { BACKEND_URL } from '@env';
+// import { BACKEND_URL } from '@env';
+const BACKEND_URL = 'http://192.168.1.103:5000';
 
 // Interface
 import { User } from '../types/interfaces';
