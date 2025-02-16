@@ -73,13 +73,20 @@ export interface ParsedBytes {
     AID?: string;
   }
   
-export type FilterType = 'daily' | 'weekly' | 'monthly' | 'annually' | { startDate: string; endDate: string };
+export type FilterType = "daily" | "weekly" | "monthly" | "annually" | { startDate: string; endDate: string }
 
 export interface StatsData {
-    transactions: number
-    totalAmount: number
-    payments: number
-    returns: number
-    paymentsAmount: number
-    returnsAmount: number
-  }
+transactions: number
+totalAmount: number
+payments: number
+returns: number
+paymentsAmount: number
+returnAmount: number
+}
+
+export interface ApiResponse {
+data: {
+    "time-filter": string
+    stats: Record<string, StatsData>
+}
+}
