@@ -1,18 +1,18 @@
 import React from "react"
 import { View, Text, StyleSheet, Dimensions, ScrollView } from "react-native"
-import { BarChart as RNBarChart } from "react-native-chart-kit"
+import { LineChart as RNLineChart } from "react-native-chart-kit"
 import type { FilterType } from "../../types/interfaces"
 import { Svg, Line, Text as SvgText } from "react-native-svg"
 import theme from "../../utils/theme"
 import FontAwesome5Icon from "react-native-vector-icons/FontAwesome5"
 
-interface BarChartProps {
+interface LineChartProps {
   data: Record<string, any>
   timeFilter: FilterType
   height: number
 }
 
-export const BarChart: React.FC<BarChartProps> = ({ data, timeFilter, height }) => {
+export const LineChart: React.FC<LineChartProps> = ({ data, timeFilter, height}) => {
   const formatXLabel = (value: string) => {
     switch (timeFilter) {
       case "daily":
@@ -37,7 +37,7 @@ export const BarChart: React.FC<BarChartProps> = ({ data, timeFilter, height }) 
   }
 
   const screenWidth = Dimensions.get("window").width
-  const width = Math.max(screenWidth - 32, labels.length * 60) 
+  const width = Math.max(screenWidth - 32, labels.length * 60) // Ensure minimum width per data point
 
   // Generate vertical lines for year and month changes
   const verticalLines: { x: number; color: string; label: string }[] = [];
@@ -133,31 +133,29 @@ export const BarChart: React.FC<BarChartProps> = ({ data, timeFilter, height }) 
       >{`${timeFilter.toString().charAt(0).toUpperCase() + timeFilter.toString().slice(1)} Statistics`}</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         <View>
-          <RNBarChart
+          <RNLineChart
             data={chartData}
             width={width}
             height={height}
             yAxisSuffix=" $"
-            yAxisLabel=""
-            flatColor={true}
             chartConfig={{
               backgroundColor: "#ffffff",
               backgroundGradientFrom: "#ffffff",
               backgroundGradientTo: "#ffffff",
-              decimalPlaces: 2,    
+              decimalPlaces: 2,
               color: (opacity = 1) => theme.palette.primary.main,
-              labelColor: (opacity = 1) => '#000',                      
-            }}          
-            showValuesOnTopOfBars
+              labelColor: (opacity = 1) => '#000',    
+            }}
+            bezier
             fromZero
             withInnerLines={false}
-            showBarTops={false}
             segments={4}
           />
           <Svg style={[StyleSheet.absoluteFill, { height: height + 30 }]}>{renderVerticalLines()}</Svg>
         </View>
       </ScrollView>
       <View style={styles.line} />
+      
       <ScrollView style={{...styles.statsList, width: screenWidth - 48}}>
         {Object.entries(data).map(([key, value], index) => (
           <View key={index} style={styles.ststsCard}>              
@@ -197,7 +195,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 20,
-    color: theme.palette.text.primary,
+    color: "#303030",
     alignSelf: "flex-start",
   },
   line: { 
