@@ -1,7 +1,7 @@
 <h1 align="center">📱 TPV Virtual – Frontend React Native</h1>
 
 <p align="center">
-  Se presenta el desarrollo de una innovadora plataforma diseñada para el uso de un TPV en cualquier dispositivo inteligente. Esta solución ofrece el procesamiento de pagos con tarjeta de manera efectiva y rápida sin necesidad de ningún dispositivo adicional. El proyecto se enfoca en crear un entorno seguro para los usuarios, empleando técnicas de cifrado avanzadas y cumpliendo con normativas internacionales de protección de datos, juntamente con un portal útil para la gestión de las transacciones, aportando una interfaz de información enriquecedora La flexibilidad y escalabilidad de la aplicación la hacen ideal para pequeños negocios y autónomos que buscan un sistema de pago ágil y accesible.    
+  Interfaz móvil para el proyecto TPV Virtual, una solución de punto de venta ágil, segura y sin hardware adicional.
 </p>
 
 <p align="center">
@@ -66,3 +66,88 @@ TPV Virtual es una solución integral diseñada para permitir que cualquier disp
 
 ## 📁 Estructura del Proyecto
 
+```
+TPV_FRONTEND
+├── src/
+│   ├── assets/        # Imágenes, iconos y recursos visuales
+│   ├── components/    # Componentes reutilizables
+│   ├── context/       # Contextos globales (AuthContext, ThemeContext)
+│   ├── hooks/         # Custom hooks (useAuth, usePayment, etc.)
+│   ├── screens/       # Pantallas principales de navegación
+│   ├── types/         # Tipos globales para TypeScript
+│   └── utils/         # Funciones auxiliares, helpers
+├── android/           # Configuración nativa para Android
+├── ios/               # Configuración nativa para iOS
+├── App.tsx            # Entrada principal de la aplicación
+├── .env               # Variables de entorno
+├── package.json       # Dependencias del proyecto
+└── tsconfig.json      # Configuración de TypeScript
+```
+
+---
+
+## 🚀 Instalación y Ejecución
+
+1. Clona el repositorio:
+
+   ```bash
+   git clone https://github.com/adrimm6661604086/TPV_Frontend.git
+   cd TPV_Frontend
+   ```
+
+2. Instala dependencias:
+
+   ```bash
+   npm install
+   ```
+
+3. Ejecuta la app:
+
+   ```bash
+   npx react-native run-android
+   # o si usas iOS:
+   npx react-native run-ios
+   ```
+
+4. Asegúrate de que el backend y simulador bancario estén activos.
+
+---
+
+## 🔐 Seguridad Aplicada
+
+- Cifrado de datos sensibles usando **HTTPS y JWT**.
+- Protección contra manipulación de tarjetas o datos con validación previa.
+- Autenticación segura basada en tokens y cifrado AES desde backend.
+- Accesos restringidos por rol para usuarios y administradores.
+
+---
+
+## 📚 Stack Tecnológico
+
+| Capa            | Tecnología           |
+|-----------------|----------------------|
+| Frontend        | React Native + TypeScript |
+| Navegación      | React Navigation     |
+| Estado global   | React Context + Hooks|
+| Comunicación    | Axios (RESTful APIs) |
+| Estilos         | Tailwind-like + StyleSheet |
+| Seguridad       | JWT, HTTPS, Validación de formularios |
+
+---
+
+## 📄 Enlaces Importantes
+
+- 📱 **Frontend App**: [TPV_Frontend](https://github.com/adrimm6661604086/TPV_Frontend)
+- ⚙️ **Backend Node.js API**: *(por agregar)*
+- 🏦 **Simulador Bancario en Go**: *(por agregar)*
+- 📘 **Informe del Proyecto (PDF)**: [`TPVVirtualMóvil-Informe.pdf`](../TPVVirtualMóvil-Informe.pdf)
+
+---
+
+## 🪪 Licencia
+
+Este proyecto se distribuye bajo la Licencia MIT. Consulta el archivo [`LICENSE`](LICENSE) para más información.
+
+---
+
+> _Proyecto desarrollado como Trabajo Fin de Grado en Ingeniería Informática, calificado con Matrícula de Honor._
