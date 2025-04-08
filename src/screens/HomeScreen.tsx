@@ -1,76 +1,190 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+// React
+import React, {useState, useEffect} from 'react';
+import { View, Text, ActivityIndicator, StyleSheet, TouchableOpacity, ScrollView, Image, Alert, Modal } from 'react-native';
 
-const HomeScreen = () => {
+// Libraries
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useNavigation, CompositeNavigationProp } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { PaymentStackParamList, RootStackParamList } from '../types/navigationTypes'; 
+
+// Hooks
+import useTransactions from '../hooks/TransactionHooks';
+
+// Utils
+import theme from '../utils/theme';
+import { Transaction } from '../types/interfaces';
+import TransactionList from '../components/TransactionList';
+
+type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Main'>;
+type MainScreenNavigationProp = NativeStackNavigationProp<PaymentStackParamList, 'MainScreen'>;
+
+type CombinedNavigationProp = CompositeNavigationProp<
+  HomeScreenNavigationProp  ,
+  MainScreenNavigationProp
+>;
+
+const HomeScreen: React.FC  = () => {  
+  const navigator = useNavigation<CombinedNavigationProp>();
+
+  const [LastWeekBalance, setLastWeekBalance] = useState(0);
+  const [TodayBalance, setTodayBalance] = useState(0);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);  
+  const [showMenu, setShowMenu] = useState(false);
+  
+  const { transactions, loading, error, getBalanceOfLastWeek, getBalanceOfToday, fetchTransactions } = useTransactions();
+
+  useEffect(() => {
+    setLastWeekBalance(getBalanceOfLastWeek());
+    setTodayBalance(getBalanceOfToday());
+  }, [transactions]);
+
+  const handleReturn = (transaction : Transaction) => {
+    Alert.alert(
+      'Process Return',
+      `Do you want to process a return for ${transaction.amount} $ to the card **** ${transaction.last4Digits}?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Confirm',
+          onPress: () => {
+            setShowMenu(false);
+            setSelectedIndex(null);
+            navigator.navigate(
+              'Payment', 
+              { 
+                screen: 'ReturnReader',
+                params: { 
+                  transactionId: transaction.id,
+                  amount: Number(transaction.amount),
+                }            
+              }
+            );
+          },
+        },
+      ]
+    );
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size={32} color={theme.palette.primary.main} />
+      </View>
+    );
+  } 
+  else if (error) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.errorMessage}>Ocurrió un error: {error}</Text>
+        <TouchableOpacity style={styles.reloadButton} onPress={fetchTransactions}>
+          <MaterialIcon name="refresh" size={24} color="#FFFFFF" />
+          <Text style={styles.reloadButtonText}>Try Again</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Icon name="person" size={32} color="#4CAF50" />
-        <Text style={styles.userName}>TPV Virtual</Text>
-        <View style={styles.headerIcons}>
-          <Icon name="mail-outline" size={24} color="#4CAF50" />
+      
+      <View style={styles.card}>
+        <TouchableOpacity onPress={() => {fetchTransactions()}}>
+          <Text style={styles.cardTitle}>Last week balance</Text>
+        </TouchableOpacity>
+        <View style={styles.balanceContainer}>
+          <Text style={styles.balanceAmount}>{LastWeekBalance.toFixed(2)} $</Text>
+          <Text style={{fontSize: 18, color: TodayBalance < 0.0 ? theme.palette.error.main : theme.palette.success.main}}>
+              ({TodayBalance.toFixed(2)}) $
+          </Text>
         </View>
       </View>
 
-      {/* Balance Section */}
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>Last week Balance</Text>
-        <Text style={styles.balanceAmount}>1.234.567,89 $</Text>
-        <Text style={styles.balanceChange}>(+2.273 $)</Text>
+        <TransactionList
+          transactions={transactions}
+          maxHeight={280}
+          onFetchTransactions={fetchTransactions}
+          onShowMore={(transactions) => {
+            (navigator as HomeScreenNavigationProp).navigate('ShowMore', { transactions });
+          }}
+          onLongPressTransaction={(transaction) => {
+            setSelectedIndex(transactions.indexOf(transaction));
+            setShowMenu(true);
+          }}
+        />
       </View>
 
-      {/* Movements Section */}
-      <View style={styles.card}>
-        <View style={styles.movementsHeader}>
-          <Text style={styles.cardTitle}>Last movements</Text>
-          <TouchableOpacity>
-            <Text style={styles.showMore}>Show more ...</Text>
-          </TouchableOpacity>
-        </View>
-        <ScrollView>
-          {[
-            { amount: '2400,00 $', date: '1/1/24 9:00' },
-            { amount: '29,99 $', date: '2/2/24 10:00' },
-            { amount: '12,99 $', date: '3/3/24 11:00' },
-            { amount: '5,45 $', date: '4/4/24 12:00' },
-            { amount: '6,32 $', date: '5/5/24 13:00' },
-            { amount: '0,99 $', date: '5/5/24 10:30' },
-            { amount: '8,92 $', date: '5/5/24 13:00' },
-          ].map((item, index) => (
-            <View key={index} style={styles.movementItem}>
-              <Text style={styles.movementAmount}>{item.amount}</Text>
-              <Text style={styles.movementDate}>{item.date}</Text>
-            </View>
-          ))}
-        </ScrollView>
-      </View>
-
-      {/* Make Payment Button */}
-      <TouchableOpacity style={styles.paymentButton}>
+      <TouchableOpacity 
+        style={styles.paymentButton} 
+        onPress={() => {
+          navigator.navigate('Payment', 
+            { 
+              screen: 'PaymentSetter',
+              params: undefined
+            }
+          );
+        }}>
         <Text style={styles.paymentButtonText}>Make Payment</Text>
       </TouchableOpacity>
+
+      <Modal
+        transparent={true}
+        visible={showMenu}
+        animationType="slide"
+        onRequestClose={() => {
+          setSelectedIndex(null);
+          setShowMenu(false); 
+        }}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.menu}>
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => {
+                if (selectedIndex !== null) {
+                  handleReturn(transactions[selectedIndex]);
+                }
+              }}
+            >
+              <MaterialCommunityIcons name="cash-refund" size={24} color="green" />
+              <Text style={styles.menuText}>Process Return</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => {
+                setSelectedIndex(null);
+                setShowMenu(false);
+              }}
+            >
+              <MaterialCommunityIcons name="close-circle-outline" size={24} color="red" />
+              <Text style={styles.menuText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
 
-// Estilos
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
-    paddingTop: 50,
+    backgroundColor: theme.palette.background.light,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    marginBottom: 10,
+  blurOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', 
+    zIndex: 5,
+    elevation: 5,
   },
   userName: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: 'bold',
   },
   headerIcons: {
@@ -80,7 +194,7 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: '#FFFFFF',
     margin: 15,
-    padding: 20,
+    padding: 16,
     borderRadius: 10,
     shadowColor: '#000',
     shadowOpacity: 0.1,
@@ -88,58 +202,97 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   cardTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
     marginBottom: 10,
+  },
+  balanceContainer: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   balanceAmount: {
     fontSize: 24,
     fontWeight: 'bold',
-  },
-  balanceChange: {
-    fontSize: 16,
-    color: 'green',
+    paddingRight: 10,
   },
   movementsHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
   showMore: {
-    color: '#4CAF50',
+    fontSize: 16,
+    color: theme.palette.primary.dark,
   },
   movementItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginVertical: 5,
+    padding: 5,
   },
   movementAmount: {
-    fontSize: 14,
+    fontSize: 16,
   },
   movementDate: {
-    fontSize: 12,
-    color: '#888888',
+    fontSize: 16,
+    color: theme.palette.text.secondary,
   },
   paymentButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: theme.palette.primary.main,
     marginHorizontal: 15,
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',
-    marginTop: 10,
   },
   paymentButtonText: {
     color: '#FFFFFF',
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
   },
-  bottomNav: {
+  errorMessage: {
+    fontSize: 16,
+    color: 'red',
+    marginVertical: 20,
+    textAlign: 'center',
+  },
+  reloadButton: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    padding: 10,
-    backgroundColor: '#333333',
-    position: 'absolute',
-    bottom: 0,
-    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.palette.primary.main,
+    paddingVertical: 10,
+    marginHorizontal: 20,
+    borderRadius: 8,
+  },
+  reloadButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginLeft: 10,
+  },
+  cardImage: {
+    width: 32, 
+    height: 20, 
+    borderRadius: 5
+  }, 
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  menu: {
+    backgroundColor: '#FFF',
+    padding: 20,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+  },
+  menuText: {
+    fontSize: 16,
+    marginLeft: 10,
   },
 });
 
